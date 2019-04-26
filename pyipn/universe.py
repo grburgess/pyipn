@@ -1,3 +1,7 @@
+import numpy as np
+import collections
+
+
 class Universe(object):
     def __init__(self, grb):
         """FIXME! briefly describe function
@@ -7,13 +11,15 @@ class Universe(object):
         :rtype: 
 
         """
-        
+
         self._detectors = collections.OrderedDict()
         self._grb = grb
 
         self._time_differences = None
         self._T0 = None
-
+        self._light_curves = None
+        
+        
     def register_detector(self, detector):
         """FIXME! briefly describe function
 
@@ -29,7 +35,7 @@ class Universe(object):
     def detectors(self):
         return self._detectors
 
-    def explode_grb(self, verbose=True):
+    def explode_grb(self, tstart, tstop, verbose=True):
         """FIXME! briefly describe function
 
         :param verbose: 
@@ -40,7 +46,7 @@ class Universe(object):
 
         self._compute_time_differences()
 
-        self._create_light_curves()
+        self._create_light_curves(tstart, tstop)
 
     def _compute_time_differences(self):
         """FIXME! briefly describe function
@@ -81,7 +87,7 @@ class Universe(object):
         self._T0 = self._T0[unsort]
         self._time_differences[unsort]
 
-    def _create_light_curves(self):
+    def _create_light_curves(self, tstart, tstop):
         """FIXME! briefly describe function
 
         :returns: 
@@ -89,6 +95,9 @@ class Universe(object):
 
         """
 
+        self._light_curve = collections.OrderedDict()
+        
+
         for t0, (name, detector) in zip(self._T0, self._detectors.items()):
 
-            detector.build_light_curve(self._grb, t0)
+            self._light_curves[name] = detector.build_light_curve(self._grb, t0, tstart, tstop)
