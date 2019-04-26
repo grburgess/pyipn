@@ -15,7 +15,7 @@ def norris(x, K, t_start, t_rise, t_decay):
 
 
 @jit
-def norris_poisson_generator(tstart, tstop, K, p_start, t_rise, t_decay):
+def source_poisson_generator(tstart, tstop, K, p_start, t_rise, t_decay):
     """
     Non-homogeneous poisson process generator
     for a given max rate and time range, this function
@@ -53,7 +53,7 @@ def norris_poisson_generator(tstart, tstop, K, p_start, t_rise, t_decay):
 
 
 @jit
-def non_homogeneous_poisson_generator(tstart, tstop, slope, intercept):
+def background_poisson_generator(tstart, tstop, slope, intercept):
     """
     Non-homogeneous poisson process generator
     for a given max rate and time range, this function
