@@ -3,7 +3,6 @@ from astropy.coordinates import SkyCoord
 
 
 class Pointing(object):
-
     def __init__(self, ra, dec):
         """
         The directional pointing of a detector.
@@ -19,8 +18,7 @@ class Pointing(object):
 
         # build a sky_coord
 
-        self._skycoord = SkyCoord(ra, dec, unit='deg', frame='icrs')
-
+        self._skycoord = SkyCoord(ra, dec, unit="deg", frame="icrs")
 
     def get_seperation_angle(self, grb):
         """
@@ -32,45 +30,41 @@ class Pointing(object):
         :rtype: 
 
         """
-        
 
         return self._skycoord.separation(grb.location.coord).rad
-        
-        
-        
 
 
 class Location(object):
     def __init__(self, sky_coord):
-        
-        self._skycoord
+
+        self._skycoord = sky_coord
 
     def get_light_travel_time(self, other_location):
 
         pass
-
 
     @property
     def coord(self):
 
         return self._skycoord
 
+
 class GRBLocation(Location):
     def __init__(self, ra, dec, distance):
 
-        sky_coord = SkyCoord(ra, dec, unit="deg", distance=distance, frame="icrs")
+        sky_coord = SkyCoord(ra * u.deg, dec * u.deg, distance=distance, frame="icrs")
 
-        super(DetectorLocation, self).__init__(sky_coord)
+        super(GRBLocation, self).__init__(sky_coord)
 
 
 class DetectorLocation(Location):
     _EARTH_RADIUS = 6700 * u.km
 
-    def __init__(self, lat, lon, altitude, obs_time):
+    def __init__(self, ra, dec, altitude, obs_time):
         """FIXME! briefly describe function
 
-        :param lat: 
-        :param lon: 
+        :param ra: 
+        :param dec: 
         :param altitude: 
         :param obs_time: 
         :returns: 
@@ -88,12 +82,7 @@ class DetectorLocation(Location):
         # create a sky coordinate for the detector
 
         sky_coord = SkyCoord(
-            lat,
-            long,
-            unit="deg",
-            distance=distance,
-            equinox=obs_time,
-            frame="geocentric",
+            ra * u.deg, dec * u.deg, distance=distance, equinox=obs_time, frame="gcrs"
         )
 
         super(DetectorLocation, self).__init__(sky_coord)

@@ -60,12 +60,15 @@ class Universe(object):
         ltt = []
         for name, detector in self._detectors.items():
 
-            ltt.append(detector.light_travel_time(self._grb))
-
+            ltt.append(detector.light_travel_time(self._grb).value)
+            
         # rank the distances in ascending order
-        self._distance_rank = np.argsort(distances)
+        self._distance_rank = np.argsort(ltt)
         unsort = self._distance_rank.argsort()
 
+
+        print()
+        
         # for now compute considering all detectors are static
         # the TOA difference of each detector
         ltt = np.array(ltt)[self._distance_rank]
@@ -84,6 +87,9 @@ class Universe(object):
             self._T0.append(T0)
             self._time_differences.append(dt)
 
+        self._T0 = np.array(self._T0)
+        self._time_differences = np.array(self._time_differences)
+        
         self._T0 = self._T0[unsort]
         self._time_differences[unsort]
 
@@ -95,7 +101,7 @@ class Universe(object):
 
         """
 
-        self._light_curve = collections.OrderedDict()
+        self._light_curves = collections.OrderedDict()
         
 
         for t0, (name, detector) in zip(self._T0, self._detectors.items()):

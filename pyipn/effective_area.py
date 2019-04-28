@@ -1,3 +1,4 @@
+import numpy as np
 
 class EffectiveArea(object):
 
@@ -10,7 +11,7 @@ class EffectiveArea(object):
 
         """
 
-        self._total_area = area
+        self._total_area = total_area
         self._seperation_angle = None
         
         

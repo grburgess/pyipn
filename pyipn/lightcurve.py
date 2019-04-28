@@ -57,7 +57,7 @@ class LightCurve(object):
 
         ax.hlines(rate, edges[:-1], edges[1:], **kwargs)
 
-        ax.vlines(mid, rate-err, rate+err, **kwargs)
+        ax.vlines(mid_points, rate-err, rate+err, **kwargs)
 
         ax.set_ylabel('rate')
         ax.set_xlabel('time')

@@ -1,4 +1,6 @@
 import numpy as np
+import astropy.constants as constants
+
 
 from .lightcurve import LightCurve
 from .possion_gen import source_poisson_generator, background_poisson_generator
@@ -6,14 +8,23 @@ from .possion_gen import source_poisson_generator, background_poisson_generator
 
 class Detector(object):
 
-    def __init__(self, location, pointing, effective_area):
+    def __init__(self, location, pointing, effective_area, name):
 
 
         self._effective_area = effective_area
         self._pointing = pointing
         self._location = location
         self._background_slope = 0.
+        self._background_norm = 50.
+        
+        self._name = name
 
+
+    @property
+    def name(self):
+
+        return self._name
+        
     @property
     def effective_area(self):
 
@@ -30,6 +41,18 @@ class Detector(object):
         return self._pointing
 
 
+    def light_travel_time(self, grb):
+
+
+        # get the 3D seperation
+
+        distance = self._location.coord.separation_3d(grb.location.coord)
+
+        ltt = distance/constants.c
+
+        return ltt
+        
+    
     def build_light_curve(self, grb, T0, tstart, tstop):
 
 
@@ -48,11 +71,11 @@ class Detector(object):
 
         # scale the GRB by the effective area
         
-        observed_intensity = K * self._effective_area.adjusted_effective_area
+        observed_intensity = K * self._effective_area.effective_area
 
         # compute the arrival times
         
-        source_arrival_times = source_poisson_generator(tstart, tstop, observed_intensity, p_start, t_rise, t_decay)
+        source_arrival_times = source_poisson_generator(tstart, tstop, observed_intensity, T0, t_rise, t_decay)
         
 
         bkg_arrival_times = background_poisson_generator(tstart, tstop, self._background_slope, self._background_norm)
