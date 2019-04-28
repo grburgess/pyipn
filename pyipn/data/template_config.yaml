@@ -1,0 +1,32 @@
+grb:
+  ra: 0.
+  dec: 0.
+  distance: 1.
+  K: 10.
+  t_rise: 1.
+  t_decay: 2.
+
+detectors:
+
+  det1:
+    ra: 10.
+    dec: -80.
+    altitude: 500.
+    pointing:
+      ra: 0.
+      dec: 0.
+    effective_area: 1.
+
+  
+  det2:
+    ra: 60.
+    dec: -65.
+    altitude: 1500.
+    pointing:
+      ra: 0.
+      dec: 0.
+    effective_area: 1.
+
+    
+  
+    
