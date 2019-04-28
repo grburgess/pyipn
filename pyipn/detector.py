@@ -9,6 +9,19 @@ from .possion_gen import source_poisson_generator, background_poisson_generator
 class Detector(object):
 
     def __init__(self, location, pointing, effective_area, name):
+        """
+        A detector at a certain location in space,
+        with a certain spatial pointing, 
+        and a given effective area.
+
+        :param location: a detector location
+        :param pointing: a detector pointing
+        :param effective_area: a detector effective area
+        :param name: the detector's name
+        :returns: 
+        :rtype: 
+
+        """
 
 
         self._effective_area = effective_area
@@ -22,26 +35,61 @@ class Detector(object):
 
     @property
     def name(self):
+        """
+        The detector's name
+        :returns: 
+        :rtype: 
+
+        """
 
         return self._name
         
     @property
     def effective_area(self):
+        """
+        the detector's effective area
+        :returns: 
+        :rtype: 
+
+        """
 
         return self._effective_area
 
     @property
     def pointing(self):
+        """
+        the pointing of the detector
 
+        :returns: 
+        :rtype: 
+
+        """
+        
         return self._pointing
 
     @property
     def location(self):
+        """
+        detector's location 
 
-        return self._pointing
+        :returns: 
+        :rtype: 
+
+        """
+        
+        return self._location
 
 
     def light_travel_time(self, grb):
+        """
+        The light travel time to the GRB
+
+        :param grb: A GRB
+        :returns: 
+        :rtype: 
+
+        """
+        
 
 
         # get the 3D seperation
