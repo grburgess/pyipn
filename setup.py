@@ -71,7 +71,7 @@ REQUIRED = [
     "Cython",
     'astropy',
     'numba',
-    'pyyaml'
+    'pyyaml',
 
 ]
 
