@@ -85,4 +85,4 @@ class DetectorLocation(Location):
             ra * u.deg, dec * u.deg, distance=distance, equinox=obs_time, frame="gcrs"
         )
 
-        super(DetectorLocation, self).__init__(sky_coord)
+        super(DetectorLoocation, self).__init__(sky_coord)

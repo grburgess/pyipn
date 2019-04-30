@@ -98,12 +98,31 @@ class Detector(object):
 
         ltt = distance/constants.c
 
-        return ltt
         
+        
+        return ltt.to('second')
+
+
+    def angular_separation(self, grb):
+
+        return self._location.coord.separation(grb.location.coord)
+
+    
     
     def build_light_curve(self, grb, T0, tstart, tstop):
+        """
+        Build the light curve observed from the GRB
 
+        :param grb: 
+        :param T0: 
+        :param tstart: 
+        :param tstop: 
+        :returns: 
+        :rtype: 
 
+        """
+        
+        
         # first get the seperation angle
         # from the detector pointing and
         # the grb

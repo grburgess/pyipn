@@ -1,5 +1,14 @@
 import numpy as np
 import collections
+import yaml
+from astropy.time import Time
+import astropy.units as u
+
+from .effective_area import EffectiveArea
+from .geometry import Pointing, DetectorLocation
+
+from .grb import GRB
+from .detector import Detector
 
 
 class Universe(object):
@@ -18,8 +27,7 @@ class Universe(object):
         self._time_differences = None
         self._T0 = None
         self._light_curves = None
-        
-        
+
     def register_detector(self, detector):
         """FIXME! briefly describe function
 
@@ -60,15 +68,13 @@ class Universe(object):
         ltt = []
         for name, detector in self._detectors.items():
 
-            ltt.append(detector.light_travel_time(self._grb).value)
-            
+            ltt.append(detector.angular_separation(self._grb).value)
+
         # rank the distances in ascending order
         self._distance_rank = np.argsort(ltt)
         unsort = self._distance_rank.argsort()
 
 
-        print()
-        
         # for now compute considering all detectors are static
         # the TOA difference of each detector
         ltt = np.array(ltt)[self._distance_rank]
@@ -89,7 +95,7 @@ class Universe(object):
 
         self._T0 = np.array(self._T0)
         self._time_differences = np.array(self._time_differences)
-        
+
         self._T0 = self._T0[unsort]
         self._time_differences[unsort]
 
@@ -102,8 +108,58 @@ class Universe(object):
         """
 
         self._light_curves = collections.OrderedDict()
-        
 
         for t0, (name, detector) in zip(self._T0, self._detectors.items()):
 
-            self._light_curves[name] = detector.build_light_curve(self._grb, t0, tstart, tstop)
+            self._light_curves[name] = detector.build_light_curve(
+                self._grb, t0, tstart, tstop
+            )
+
+    @classmethod
+    def from_yaml(cls, yaml_file):
+        """
+        Create a universe from a yaml file
+
+        :param cls: 
+        :param yaml_file: 
+        :returns: 
+        :rtype: 
+
+        """
+
+        with open(yaml_file, "r") as f:
+
+            setup = yaml.load(f, Loader=yaml.SafeLoader)
+
+            grb_params = setup["grb"]
+
+            grb = GRB(
+                grb_params["ra"],
+                grb_params["dec"],
+                grb_params["distance"] * u.Mpc,
+                grb_params["K"],
+                grb_params["t_rise"],
+                grb_params["t_decay"],
+            )
+
+            universe = cls(grb)
+
+            for name, value in setup["detectors"].items():
+
+                eff_area = EffectiveArea(value["effective_area"])
+
+                time = Time(value["time"])
+
+                location = DetectorLocation(
+                    value["ra"], value["dec"], value["altitude"] * u.km, time
+                )
+
+                pointing = Pointing(value['pointing']['ra'],
+                                    value['pointing']['dec']
+                )
+
+                det = Detector(location, pointing, eff_area, name)
+
+                universe.register_detector(det)
+
+            return universe
