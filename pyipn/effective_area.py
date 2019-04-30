@@ -1,7 +1,7 @@
 import numpy as np
 
-class EffectiveArea(object):
 
+class EffectiveArea(object):
     def __init__(self, total_area):
         """FIXME! briefly describe function
 
@@ -13,12 +13,10 @@ class EffectiveArea(object):
 
         self._total_area = total_area
         self._seperation_angle = None
-        
-        
+
     @property
     def total_area(self):
         return self._total_area
-
 
     @property
     def effective_area(self):
@@ -36,8 +34,7 @@ class EffectiveArea(object):
         else:
 
             return self._total_area
-        
-        
+
     def set_seperation_angle(self, angle):
         """FIXME! briefly describe function
 
@@ -49,7 +46,6 @@ class EffectiveArea(object):
 
         self._seperation_angle = angle
 
-        
     def effective_area_at(self, angle):
         """FIXME! briefly describe function
 
@@ -61,11 +57,8 @@ class EffectiveArea(object):
 
         if angle >= 0.5 * np.pi:
 
-            return 0.
+            return 0.0
 
         else:
 
             return self._total_area * np.cos(angle)
-
-
-    

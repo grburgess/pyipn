@@ -21,7 +21,7 @@ class GRB(object):
         """
 
         # create a GRB location
-        
+
         self._location = GRBLocation(ra, dec, distance)
 
         self._K = K

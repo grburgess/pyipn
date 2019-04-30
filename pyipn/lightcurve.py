@@ -21,17 +21,17 @@ class LightCurve(object):
         :rtype: 
 
         """
-        
+
         # create the bins
-        
+
         bins = np.arange(tstart, tstop, dt)
 
         # histogram the counts
-        
+
         hist, edges = np.histogram(self._arrival_times, bins=bins)
 
-        # compute the rate 
-        
+        # compute the rate
+
         rate = hist / dt
 
         return rate, edges
@@ -57,8 +57,7 @@ class LightCurve(object):
 
         ax.hlines(rate, edges[:-1], edges[1:], **kwargs)
 
-        ax.vlines(mid_points, rate-err, rate+err, **kwargs)
+        ax.vlines(mid_points, rate - err, rate + err, **kwargs)
 
-        ax.set_ylabel('rate')
-        ax.set_xlabel('time')
-
+        ax.set_ylabel("rate")
+        ax.set_xlabel("time")

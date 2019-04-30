@@ -43,6 +43,10 @@ class Universe(object):
     def detectors(self):
         return self._detectors
 
+    @property
+    def light_curves(self):
+        return self._light_curves
+
     def explode_grb(self, tstart, tstop, verbose=True):
         """FIXME! briefly describe function
 
@@ -73,7 +77,6 @@ class Universe(object):
         # rank the distances in ascending order
         self._distance_rank = np.argsort(ltt)
         unsort = self._distance_rank.argsort()
-
 
         # for now compute considering all detectors are static
         # the TOA difference of each detector
@@ -154,9 +157,7 @@ class Universe(object):
                     value["ra"], value["dec"], value["altitude"] * u.km, time
                 )
 
-                pointing = Pointing(value['pointing']['ra'],
-                                    value['pointing']['dec']
-                )
+                pointing = Pointing(value["pointing"]["ra"], value["pointing"]["dec"])
 
                 det = Detector(location, pointing, eff_area, name)
 

@@ -7,7 +7,6 @@ from .possion_gen import source_poisson_generator, background_poisson_generator
 
 
 class Detector(object):
-
     def __init__(self, location, pointing, effective_area, name):
         """
         A detector at a certain location in space,
@@ -23,15 +22,13 @@ class Detector(object):
 
         """
 
-
         self._effective_area = effective_area
         self._pointing = pointing
         self._location = location
-        self._background_slope = 0.
-        self._background_norm = 50.
-        
-        self._name = name
+        self._background_slope = 0.0
+        self._background_norm = 50.0
 
+        self._name = name
 
     @property
     def name(self):
@@ -43,7 +40,7 @@ class Detector(object):
         """
 
         return self._name
-        
+
     @property
     def effective_area(self):
         """
@@ -64,7 +61,7 @@ class Detector(object):
         :rtype: 
 
         """
-        
+
         return self._pointing
 
     @property
@@ -76,9 +73,8 @@ class Detector(object):
         :rtype: 
 
         """
-        
-        return self._location
 
+        return self._location
 
     def light_travel_time(self, grb):
         """
@@ -89,26 +85,19 @@ class Detector(object):
         :rtype: 
 
         """
-        
-
 
         # get the 3D seperation
 
         distance = self._location.coord.separation_3d(grb.location.coord)
 
-        ltt = distance/constants.c
+        ltt = distance / constants.c
 
-        
-        
-        return ltt.to('second')
-
+        return ltt.to("second")
 
     def angular_separation(self, grb):
 
         return self._location.coord.separation(grb.location.coord)
 
-    
-    
     def build_light_curve(self, grb, T0, tstart, tstop):
         """
         Build the light curve observed from the GRB
@@ -121,8 +110,7 @@ class Detector(object):
         :rtype: 
 
         """
-        
-        
+
         # first get the seperation angle
         # from the detector pointing and
         # the grb
@@ -135,21 +123,20 @@ class Detector(object):
 
         K, t_rise, t_decay = grb.pulse_parameters
 
-
         # scale the GRB by the effective area
-        
+
         observed_intensity = K * self._effective_area.effective_area
 
         # compute the arrival times
-        
-        source_arrival_times = source_poisson_generator(tstart, tstop, observed_intensity, T0, t_rise, t_decay)
-        
 
-        bkg_arrival_times = background_poisson_generator(tstart, tstop, self._background_slope, self._background_norm)
+        source_arrival_times = source_poisson_generator(
+            tstart, tstop, observed_intensity, T0, t_rise, t_decay
+        )
 
+        bkg_arrival_times = background_poisson_generator(
+            tstart, tstop, self._background_slope, self._background_norm
+        )
 
         # return a light curve
 
         return LightCurve(source_arrival_times, bkg_arrival_times)
-        
-        
