@@ -5,7 +5,6 @@
 
 
 from setuptools.command.build_ext import build_ext as _build_ext
-from Cython.Build import cythonize
 from setuptools import setup, find_packages, Command, Extension
 import os
 import io
@@ -62,7 +61,7 @@ REQUIRES_PYTHON = ">=2.7.0"
 VERSION = None
 
 REQUIRED = [
-    "numpy",
+    "numpy",,
     "scipy",
     "ipython",
     "matplotlib",
