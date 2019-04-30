@@ -68,7 +68,6 @@ REQUIRED = [
     "matplotlib",
     "h5py",
     "pandas",
-    "Cython",
     'astropy',
     'numba',
     'pyyaml',
