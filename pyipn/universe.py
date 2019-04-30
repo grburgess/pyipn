@@ -67,8 +67,8 @@ class Universe(object):
         :rtype: 
 
         """
-
-        # compute which detector sees the GRB first
+        # BEGIN HERE
+        # compute which detector sees the GRB first 
         ltt = []
         for name, detector in self._detectors.items():
 
