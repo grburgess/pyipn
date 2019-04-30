@@ -61,7 +61,7 @@ REQUIRES_PYTHON = ">=2.7.0"
 VERSION = None
 
 REQUIRED = [
-    "numpy",,
+    "numpy",
     "scipy",
     "ipython",
     "matplotlib",
