@@ -14,11 +14,6 @@ pyipn
         :alt: Documentation Status
 
 
-.. image:: https://pyup.io/repos/github/grburgess/pyipn/shield.svg
-     :target: https://pyup.io/repos/github/grburgess/pyipn/
-     :alt: Updates
-
-
 
 A generic IPN simulator
 
