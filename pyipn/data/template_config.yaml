@@ -1,7 +1,9 @@
 grb:
-  ra: 0.
-  dec: 0.
-  distance: 1.
+
+  ra: 10.
+  dec: 30.
+  distance: 1.99000
+
   K: 10.
   t_rise: 1.
   t_decay: 2.
@@ -9,22 +11,30 @@ grb:
 detectors:
 
   det1:
-    ra: 10.
-    dec: -80.
+
+    ra: 50.
+    dec: 80.
     altitude: 500.
+    time: '2010-01-01T00:00:00'
+    
     pointing:
-      ra: 0.
-      dec: 0.
+      ra: 10.
+      dec: 30.
+
     effective_area: 1.
 
   
   det2:
-    ra: 60.
-    dec: -65.
+
+    ra: 25.
+    dec: -20.
     altitude: 1500.
+    time: '2010-01-01T00:00:00'
+    
     pointing:
-      ra: 0.
-      dec: 0.
+      ra: 10.
+      dec: 30.
+
     effective_area: 1.
 
     
