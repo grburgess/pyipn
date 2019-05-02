@@ -33,7 +33,7 @@ class Pointing(object):
 
         return self._skycoord.separation(grb.location.coord).rad
     
-#why pointing and location class different
+#Q:why pointing and location class different?
 class Location(object):
     def __init__(self, sky_coord):
 
