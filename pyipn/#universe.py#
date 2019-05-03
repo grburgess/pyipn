@@ -70,13 +70,15 @@ class Universe(object):
         # BEGIN HERE
         # compute which detector sees the GRB first 
         ltt = []
+        cartesian_loc = []
         for name, detector in self._detectors.items():
 
+            cartesian_loc.append(detector.location.coord.represent_as(CartesianRepresentation))
             ltt.append(detector.angular_separation(self._grb).value)
 
         # rank the distances in ascending order
         self._distance_rank = np.argsort(ltt)
-        unsort = self._distance_rank.argsort() #Q:que?
+        unsort = self._distance_rank.argsort()
 
         # for now compute considering all detectors are static
         # the TOA difference of each detector
