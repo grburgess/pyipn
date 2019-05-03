@@ -1,6 +1,8 @@
 import numpy as np
-
-from .geometry import GRBLocation
+try:
+    from .geometry import GRBLocation
+except Exception: #ImportError
+    from geometry import GRBLocation
 
 
 class GRB(object):

@@ -1,10 +1,14 @@
 import numpy as np
 import astropy.constants as constants
 
-
-from .lightcurve import LightCurve
-from .possion_gen import source_poisson_generator, background_poisson_generator
-
+try:
+    from .lightcurve import LightCurve
+except Exception: #ImportError
+    from lightcurve import LightCurve
+try:
+    from .possion_gen import source_poisson_generator, background_poisson_generator
+except Exception: #ImportError
+    from possion_gen import source_poisson_generator, background_poisson_generator
 
 class Detector(object):
     def __init__(self, location, pointing, effective_area, name):

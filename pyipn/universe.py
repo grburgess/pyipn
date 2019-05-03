@@ -4,11 +4,22 @@ import yaml
 from astropy.time import Time
 import astropy.units as u
 
-from .effective_area import EffectiveArea
-from .geometry import Pointing, DetectorLocation
-
-from .grb import GRB
-from .detector import Detector
+try:
+    from .effective_area import EffectiveArea
+except Exception: #ImportError
+     from effective_area import EffectiveArea
+try:
+    from .geometry import Pointing, DetectorLocation
+except Exception: #ImportError
+    from geometry import Pointing, DetectorLocation
+try:
+    from .grb import GRB
+except Exception: #ImportError
+    from grb import GRB
+try:
+    from .detector import Detector
+except Exception: #ImportError
+    from detector import Detector
 
 
 class Universe(object):
