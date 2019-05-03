@@ -70,11 +70,17 @@ class Universe(object):
         # BEGIN HERE
         # compute which detector sees the GRB first 
         ltt = []
+        grb_vec = self._grb.location.get_cartesian_coord().xyz
+        norm_grb_vec = grb_vec/np.linalg.norm(grb_vec, ord =1) #normalized vector towards GRB
+        
         for name, detector in self._detectors.items():
-
-            ltt.append(detector.angular_separation(self._grb).value)
+            
+            #calculate closest distance to wavefront when the GRB reaches the detector
+            #(negative sign for right order)
+            ltt.append(- np.dot(detector.location.get_cartesian_coord().xyz, norm_grb_vec))
 
         # rank the distances in ascending order
+        
         self._distance_rank = np.argsort(ltt)
         unsort = self._distance_rank.argsort()
 
