@@ -24,8 +24,8 @@ class Universe(object):
         self._detectors = collections.OrderedDict()
         self._grb = grb
 
-        self._time_differences = None
-        self._T0 = None
+        self._time_differences = None #array of time differences ordered like _detectors
+        self._T0 = None #array of times at which detectors get hit by GRB ordered like _detectors
         self._light_curves = None
 
     def register_detector(self, detector):

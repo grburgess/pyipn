@@ -128,7 +128,7 @@ class Detector(object):
         observed_intensity = K * self._effective_area.effective_area
 
         # compute the arrival times
-
+        
         source_arrival_times = source_poisson_generator(
             tstart, tstop, observed_intensity, T0, t_rise, t_decay
         )
