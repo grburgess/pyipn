@@ -4,6 +4,15 @@ import matplotlib.pyplot as plt
 
 class LightCurve(object):
     def __init__(self, source_arrival_times, bkg_arrival_times):
+        """
+        A light curve containing events
+
+        :param source_arrival_times: the arrival times 
+        :param bkg_arrival_times: the arrival times from the background
+        :returns: 
+        :rtype: 
+
+        """
 
         self._arrival_times = np.concatenate([source_arrival_times, bkg_arrival_times])
 
@@ -36,7 +45,7 @@ class LightCurve(object):
 
         return rate, edges
 
-    def display(self, tstart, tstop, dt, **kwargs):
+    def display(self, tstart, tstop, dt, ax=None,**kwargs):
         """FIXME! briefly describe function
 
         :param tstart: 
@@ -53,11 +62,19 @@ class LightCurve(object):
 
         mid_points = np.mean([edges[1:], edges[:-1]], axis=0)
 
-        fig, ax = plt.subplots()
+        if ax is None:
+        
+            fig, ax = plt.subplots()
 
+        else:
+
+            fig = ax.get_figure()
+            
         ax.hlines(rate, edges[:-1], edges[1:], **kwargs)
 
         ax.vlines(mid_points, rate - err, rate + err, **kwargs)
 
         ax.set_ylabel("rate")
         ax.set_xlabel("time")
+
+        return fig
