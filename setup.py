@@ -76,7 +76,7 @@ REQUIRED = [
 
 
 
-#extra_files = find_data_files("pyipn/data")
+extra_files = find_data_files("pyipn/data")
 
 
 
@@ -123,7 +123,7 @@ setup(
     version='0.1.0',
     zip_safe=False,
     cmdclass={"upload": UploadCommand},
-#        package_data={"": extra_files},
+    package_data={"": extra_files},
 )
 
 
