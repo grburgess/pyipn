@@ -32,7 +32,7 @@ def source_poisson_generator(tstart, tstop, K, p_start, t_rise, t_decay):
     for i in range(num_time_steps):
         tmp[i] = norris(time_grid[i], K, p_start, t_rise, t_decay)
 
-    fmax = tmp.max()
+    fmax = tmp.max() #zeros if p_start > tstop!
 
     time = tstart
 

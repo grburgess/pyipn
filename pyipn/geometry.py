@@ -1,5 +1,5 @@
 import astropy.units as u
-from astropy.coordinates import SkyCoord
+from astropy.coordinates import SkyCoord, CartesianRepresentation
 
 
 class Pointing(object):
@@ -32,8 +32,8 @@ class Pointing(object):
         """
 
         return self._skycoord.separation(grb.location.coord).rad
-
-
+    
+#why pointing and location class different
 class Location(object):
     def __init__(self, sky_coord):
 
@@ -47,6 +47,9 @@ class Location(object):
     def coord(self):
 
         return self._skycoord
+    
+    def get_cartesian_coord(self):
+        return self._skycoord.represent_as(CartesianRepresentation)
 
 
 class GRBLocation(Location):
