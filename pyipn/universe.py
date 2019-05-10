@@ -69,31 +69,33 @@ class Universe(object):
         """
         # BEGIN HERE
         # compute which detector sees the GRB first 
-        ltt = []
+        ltd = []
         grb_vec = self._grb.location.get_cartesian_coord().xyz
-        norm_grb_vec = grb_vec/np.linalg.norm(grb_vec, ord =1) #normalized vector towards GRB
+        grb_vec = grb_vec.to(u.km)
+        norm_grb_vec = grb_vec/(np.linalg.norm(grb_vec) * u.km) #normalized vector towards GRB
         
         for name, detector in self._detectors.items():
             
             #calculate closest distance to wavefront when the GRB reaches the detector
             #(negative sign for right order)
-            ltt.append(- np.dot(detector.location.get_cartesian_coord().xyz, norm_grb_vec))
+            ltd.append(- norm_grb_vec.dot(detector.location.get_cartesian_coord().xyz))
 
         # rank the distances in ascending order
         
-        self._distance_rank = np.argsort(ltt)
+        self._distance_rank = np.argsort(ltd)
         unsort = self._distance_rank.argsort()
 
         # for now compute considering all detectors are static
         # the TOA difference of each detector
-        ltt = np.array(ltt)[self._distance_rank]
+        ltd = np.array(ltd)[self._distance_rank]
+        
 
         self._time_differences = [0.0]
         self._T0 = [0.0]
         T0 = 0.0
-        for i in range(len(ltt) - 1):
+        for i in range(len(ltd) - 1):
 
-            dt = ltt[i + 1] - ltt[i]
+            dt = ltd[i + 1] - ltd[i]
             assert (
                 dt > 0
             ), "The time diferences should be positive if the ranking worked!"
