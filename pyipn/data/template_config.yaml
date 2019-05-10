@@ -8,7 +8,7 @@ grb:
   distance: .1
 
   # lightcurve
-  K: 10. # intensity
+  K: 50. # intensity
   t_rise: 1. # rise time
   t_decay: 2. # decay time
 
