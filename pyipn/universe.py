@@ -3,6 +3,7 @@ import collections
 import yaml
 from astropy.time import Time
 import astropy.units as u
+import astropy.constants as constants
 
 from .effective_area import EffectiveArea
 from .geometry import Pointing, DetectorLocation
@@ -67,7 +68,6 @@ class Universe(object):
         :rtype: 
 
         """
-        # BEGIN HERE
         # compute which detector sees the GRB first 
         ltd = []
         grb_vec = self._grb.location.get_cartesian_coord().xyz
@@ -78,7 +78,7 @@ class Universe(object):
             
             #calculate closest distance to wavefront when the GRB reaches the detector
             #(negative sign for right order)
-            ltd.append(- norm_grb_vec.dot(detector.location.get_cartesian_coord().xyz))
+            ltd.append(- norm_grb_vec.dot(detector.location.get_cartesian_coord().xyz).value)
 
         # rank the distances in ascending order
         
@@ -95,7 +95,7 @@ class Universe(object):
         T0 = 0.0
         for i in range(len(ltd) - 1):
 
-            dt = ltd[i + 1] - ltd[i]
+            dt = ((ltd[i + 1] - ltd[i]) * u.km / constants.c).decompose().value
             assert (
                 dt > 0
             ), "The time diferences should be positive if the ranking worked!"
