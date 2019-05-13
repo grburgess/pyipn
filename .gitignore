@@ -104,3 +104,4 @@ ENV/
 bin/
 include/
 /pyipn/test.ipynb
+.directory

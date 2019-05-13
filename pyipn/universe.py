@@ -95,7 +95,7 @@ class Universe(object):
         T0 = 0.0
         for i in range(len(ltd) - 1):
 
-            dt = ((ltd[i + 1] - ltd[i]) * u.km / constants.c).decompose().value
+            dt = ((ltd[i + 1] - ltd[i]) * u.km / constants.c).decompose().value #time in seconds
             assert (
                 dt > 0
             ), "The time diferences should be positive if the ranking worked!"
@@ -105,7 +105,7 @@ class Universe(object):
             self._time_differences.append(dt)
 
         self._T0 = np.array(self._T0)
-        self._time_differences = np.array(self._time_differences)
+        self._time_differences = np.array(self._time_differences) #time in s
 
         self._T0 = self._T0[unsort]
         self._time_differences[unsort]
