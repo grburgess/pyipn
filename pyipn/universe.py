@@ -7,7 +7,7 @@ import astropy.constants as constants
 from astropy.coordinates import SkyCoord, UnitSphericalRepresentation
 
 from .effective_area import EffectiveArea
-from .geometry import Pointing, DetectorLocation
+from .geometry import Pointing, DetectorLocation, Location
 
 from .grb import GRB
 from .detector import Detector
@@ -97,7 +97,7 @@ class Universe(object):
 
             dt = ((ltd[i + 1] - ltd[i]) * u.km / constants.c).decompose().value #time in seconds
             assert (
-                dt > 0
+                dt >= 0
             ), "The time diferences should be positive if the ranking worked!"
 
             T0 += dt
@@ -179,17 +179,19 @@ class Universe(object):
                 d1.location.get_cartesian_coord().xyz)
         
         #calculate ra and dec of vector d  pointing from detector1 to detector2
-        dcart = SkyCoord(x=dxyz[0], y=dxyz[1], z=dxyz[2], representation_type='cartesian', unit='km')
-        ra = dcart.represent_as(UnitSphericalRepresentation).lon
-        dec = dcart.represent_as(UnitSphericalRepresentation).lat
+        dcart = Location(SkyCoord(x=dxyz[0], y=dxyz[1], z=dxyz[2], representation_type='cartesian', unit='km'))
+        norm_d = dcart.get_norm_vec(u.km)
+        ra = dcart.coord.represent_as(UnitSphericalRepresentation).lon
+        dec = dcart.coord.represent_as(UnitSphericalRepresentation).lat
 
         #calculate angle theta between center point d and annulus
         distance = np.linalg.norm(dxyz) * u.km
         dt = (self._T0[list(self._detectors.keys()).index(detector1)] -
               self._T0[list(self._detectors.keys()).index(detector2)]) * u.s
-        theta = np.arccos((constants.c * dt / distance).decompose())
+        #rounding to 15th decimal because small numerical errors cause issues with numbers slightly over 1
+        theta = np.arccos(np.around((constants.c * dt / distance).decompose().value, 15))
 
-        return(np.array([ra.value,dec.value])*ra.unit, theta * u.rad)
+        return(norm_d ,np.array([ra.value,dec.value])*ra.unit, theta)
         
     #def localize_GRB(self):
         

@@ -3,8 +3,8 @@
 grb:
 
   # Location and distance (degrees and Mpc)
-  ra: 20.
-  dec: 45.
+  ra: 0.
+  dec: 0.
   distance: 100.
 
   # lightcurve
@@ -39,9 +39,9 @@ detectors:
   
   det2:
 
-    ra: 90.
-    dec: 90.
-    altitude: 0.
+    ra: 180.
+    dec: 0.
+    altitude: 3000.
     time: '2010-01-01T00:00:00'
     
     pointing:
@@ -52,8 +52,8 @@ detectors:
 
   det3:
 
-    ra: 180.
-    dec: -10.
+    ra: 0.
+    dec: 90.
     altitude: 15000.
     time: '2010-01-01T00:00:00'
     

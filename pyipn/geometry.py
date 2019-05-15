@@ -33,6 +33,7 @@ class Pointing(object):
         """
 
         return self._skycoord.separation(grb.location.coord).rad
+
     
 #why pointing and location class different
 class Location(object):
@@ -54,7 +55,7 @@ class Location(object):
 
     def get_norm_vec(self, unit):
         vec = self.get_cartesian_coord().xyz.to(unit)
-        norm_vec = vec/(np.linalg.norm(vec) * unit)
+        norm_vec = vec/np.linalg.norm(vec)
         return norm_vec
 
 
