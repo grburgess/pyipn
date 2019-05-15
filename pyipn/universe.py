@@ -71,9 +71,8 @@ class Universe(object):
         """
         # compute which detector sees the GRB first 
         ltd = []
-        grb_vec = self._grb.location.get_cartesian_coord().xyz
-        grb_vec = grb_vec.to(u.km)
-        norm_grb_vec = grb_vec/(np.linalg.norm(grb_vec) * u.km) #normalized vector towards GRB
+        
+        norm_grb_vec = self._grb.location.get_norm_vec(u.km) #normalized vector towards GRB
         
         for name, detector in self._detectors.items():
             
@@ -186,9 +185,11 @@ class Universe(object):
 
         #calculate angle theta between center point d and annulus
         distance = np.linalg.norm(dxyz) * u.km
-        dt = (self.T0[list(self._detectors.keys()).index(detector1)] -
-              self.T0[list(self._detectors.keys()).index(detector2)]) * u.s
+        dt = (self._T0[list(self._detectors.keys()).index(detector1)] -
+              self._T0[list(self._detectors.keys()).index(detector2)]) * u.s
         theta = np.arccos((constants.c * dt / distance).decompose())
-        
 
-    
+        return(np.array([ra.value,dec.value])*ra.unit, theta * u.rad)
+        
+    #def localize_GRB(self):
+        

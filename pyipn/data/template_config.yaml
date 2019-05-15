@@ -3,7 +3,7 @@
 grb:
 
   # Location and distance (degrees and Mpc)
-  ra: 0.
+  ra: 20.
   dec: 45.
   distance: 100.
 
@@ -39,8 +39,8 @@ detectors:
   
   det2:
 
-    ra: 0.
-    dec: 0.
+    ra: 90.
+    dec: 90.
     altitude: 0.
     time: '2010-01-01T00:00:00'
     

@@ -1,5 +1,6 @@
 import astropy.units as u
 from astropy.coordinates import SkyCoord, CartesianRepresentation
+import numpy as np
 
 
 class Pointing(object):
@@ -50,6 +51,11 @@ class Location(object):
     
     def get_cartesian_coord(self):
         return self._skycoord.represent_as(CartesianRepresentation)
+
+    def get_norm_vec(self, unit):
+        vec = self.get_cartesian_coord().xyz.to(unit)
+        norm_vec = vec/(np.linalg.norm(vec) * unit)
+        return norm_vec
 
 
 class GRBLocation(Location):
