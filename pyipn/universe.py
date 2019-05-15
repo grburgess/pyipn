@@ -4,6 +4,7 @@ import yaml
 from astropy.time import Time
 import astropy.units as u
 import astropy.constants as constants
+from astropy.coordinates import SkyCoord, UnitSphericalRepresentation
 
 from .effective_area import EffectiveArea
 from .geometry import Pointing, DetectorLocation
@@ -172,3 +173,22 @@ class Universe(object):
                 universe.register_detector(det)
 
             return universe
+
+    def calculate_annulus(self, detector1, detector2):
+        d1, d2 = self._detectors[detector1], self._detectors[detector2]
+        dxyz = (d2.location.get_cartesian_coord().xyz -
+                d1.location.get_cartesian_coord().xyz)
+        
+        #calculate ra and dec of vector d  pointing from detector1 to detector2
+        dcart = SkyCoord(x=dxyz[0], y=dxyz[1], z=dxyz[2], representation_type='cartesian', unit='km')
+        ra = dcart.represent_as(UnitSphericalRepresentation).lon
+        dec = dcart.represent_as(UnitSphericalRepresentation).lat
+
+        #calculate angle theta between center point d and annulus
+        distance = np.linalg.norm(dxyz) * u.km
+        dt = (self.T0[list(self._detectors.keys()).index(detector1)] -
+              self.T0[list(self._detectors.keys()).index(detector2)]) * u.s
+        theta = np.arccos((constants.c * dt / distance).decompose())
+        
+
+    

@@ -3,9 +3,9 @@
 grb:
 
   # Location and distance (degrees and Mpc)
-  ra: 10.
-  dec: 30.
-  distance: .1
+  ra: 0.
+  dec: 45.
+  distance: 100.
 
   # lightcurve
   K: 10. # intensity
@@ -21,9 +21,9 @@ detectors:
   det1:
 
     # it's location in GCRS
-    ra: 50.
-    dec: 80.
-    altitude: 500. # km
+    ra: 0.
+    dec: 0.
+    altitude: 3000. # km
     time: '2010-01-01T00:00:00' # time of detection
 
     # Where the detector point in the sky
@@ -39,14 +39,27 @@ detectors:
   
   det2:
 
-    ra: 25.
-    dec: -20.
-    altitude: 1500.
+    ra: 0.
+    dec: 0.
+    altitude: 0.
     time: '2010-01-01T00:00:00'
     
     pointing:
       ra: 10.
       dec: 30.
+
+    effective_area: 1.
+
+  det3:
+
+    ra: 180.
+    dec: -10.
+    altitude: 15000.
+    time: '2010-01-01T00:00:00'
+    
+    pointing:
+      ra: 20.
+      dec: 70.
 
     effective_area: 1.
 
