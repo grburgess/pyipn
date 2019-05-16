@@ -4,7 +4,7 @@ grb:
 
   # Location and distance (degrees and Mpc)
   ra: 0.
-  dec: 0.
+  dec: -50.
   distance: 100.
 
   # lightcurve
@@ -21,7 +21,7 @@ detectors:
   det1:
 
     # it's location in GCRS
-    ra: 0.
+    ra: 10.
     dec: 0.
     altitude: 3000. # km
     time: '2010-01-01T00:00:00' # time of detection
@@ -40,7 +40,7 @@ detectors:
   det2:
 
     ra: 180.
-    dec: 0.
+    dec: -10.
     altitude: 3000.
     time: '2010-01-01T00:00:00'
     
@@ -52,8 +52,8 @@ detectors:
 
   det3:
 
-    ra: 0.
-    dec: 90.
+    ra: 20.
+    dec: 40.
     altitude: 15000.
     time: '2010-01-01T00:00:00'
     
