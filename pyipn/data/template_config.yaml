@@ -4,7 +4,7 @@ grb:
 
   # Location and distance (degrees and Mpc)
   ra: 0.
-  dec: -50.
+  dec: -10.
   distance: 100.
 
   # lightcurve
@@ -54,6 +54,19 @@ detectors:
 
     ra: 20.
     dec: 40.
+    altitude: 15000.
+    time: '2010-01-01T00:00:00'
+    
+    pointing:
+      ra: 20.
+      dec: 70.
+
+    effective_area: 1.
+
+  det4:
+
+    ra: 60.
+    dec: -30.
     altitude: 15000.
     time: '2010-01-01T00:00:00'
     

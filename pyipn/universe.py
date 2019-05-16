@@ -193,5 +193,20 @@ class Universe(object):
 
         return(norm_d ,np.array([ra.value,dec.value])*ra.unit, theta)
         
-    #def localize_GRB(self):
+    def localize_GRB(self):
+        M = []
+        b = []
+        for (d0,d1) in combinations(self._detectors.keys(), 2):
+            (cart_vec, spherical_vec, theta) = self.calculate_annulus(d0,d1)
+            M.append(cart_vec.value)
+            b.append(np.array([np.cos(theta.value)]))
+            
+        M = np.array(M)
+        b = np.array(b)
+        
+        g = np.linalg.lstsq(M,b,rcond=None)
+        grb_loc = Location(SkyCoord(x=g[0][0][0], y=g[0][1][0], z=g[0][2][0],
+                                    representation_type='cartesian', unit='km'))
+        norm_grb_loc = grb_loc.get_norm_vec(u.km)
+        
         
