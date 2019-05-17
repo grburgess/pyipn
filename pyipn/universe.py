@@ -1,5 +1,6 @@
 import numpy as np
 import collections
+from itertools import combinations
 import yaml
 from astropy.time import Time
 import astropy.units as u
@@ -191,7 +192,7 @@ class Universe(object):
         #rounding to 15th decimal because small numerical errors cause issues with numbers slightly over 1
         theta = np.arccos(np.around((constants.c * dt / distance).decompose().value, 15))
 
-        return(norm_d ,np.array([ra.value,dec.value])*ra.unit, theta)
+        return(norm_d ,np.array([ra.value,dec.value])*ra.unit, theta * u.rad)
         
     def localize_GRB(self):
         M = []
