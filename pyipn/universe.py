@@ -208,5 +208,6 @@ class Universe(object):
         grb_loc = Location(SkyCoord(x=g[0][0][0], y=g[0][1][0], z=g[0][2][0],
                                     representation_type='cartesian', unit='km'))
         norm_grb_loc = grb_loc.get_norm_vec(u.km)
+        return grb_loc
         
         
