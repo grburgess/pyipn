@@ -138,10 +138,6 @@ setup(
     version='0.1.0',
     zip_safe=False,
     cmdclass={"upload": UploadCommand},
-<<<<<<< HEAD
-=======
-    package_data={"": extra_files},
->>>>>>> 082d4e7c2ddbc618d943d7c5d512b12ade678850
 )
 
 
