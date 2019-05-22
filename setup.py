@@ -75,8 +75,22 @@ REQUIRED = [
 
 
 
+# Create list of data files
+def find_data_files(directory):
 
-#extra_files = find_data_files("pyipn/data")
+    paths = []
+
+    for (path, directories, filenames) in os.walk(directory):
+
+        for filename in filenames:
+
+            paths.append(os.path.join("..", path, filename))
+
+    return paths
+
+
+
+extra_files = find_data_files("pyipn/data")
 
 
 
@@ -124,6 +138,10 @@ setup(
     version='0.1.0',
     zip_safe=False,
     cmdclass={"upload": UploadCommand},
+<<<<<<< HEAD
+=======
+    package_data={"": extra_files},
+>>>>>>> 082d4e7c2ddbc618d943d7c5d512b12ade678850
 )
 
 
