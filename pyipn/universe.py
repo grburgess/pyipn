@@ -197,6 +197,11 @@ class Universe(object):
     def localize_GRB(self):
         M = []
         b = []
+
+        """
+        build matrix M consisting of connection vectors between two satellites
+        and vector b containing corresponding cos of annulus angles
+        """
         for (d0,d1) in combinations(self._detectors.keys(), 2):
             (cart_vec, spherical_vec, theta) = self.calculate_annulus(d0,d1)
             M.append(cart_vec.value)
