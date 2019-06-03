@@ -63,18 +63,18 @@ detectors:
 
     effective_area: 1.
 
-  det4:
+  # det4:
 
-    ra: 60.
-    dec: -30.
-    altitude: 15000.
-    time: '2010-01-01T00:00:00'
+  #   ra: 60.
+  #   dec: -30.
+  #   altitude: 15000.
+  #   time: '2010-01-01T00:00:00'
     
-    pointing:
-      ra: 20.
-      dec: 70.
+  #   pointing:
+  #     ra: 20.
+  #     dec: 70.
 
-    effective_area: 1.
+  #   effective_area: 1.
 
     
   

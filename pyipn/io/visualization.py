@@ -37,11 +37,10 @@ class SphericalCircle(PathPatch):
     Additional keyword arguments are passed to `~matplotlib.patches.Polygon`
     """
 
-    def __init__(self, center, radius, resolution=100, **kwargs):
+    def __init__(self, center, radius, resolution=100, vertex_unit=u.degree, **kwargs):
 
         # Extract longitude/latitude, either from a tuple of two quantities, or
         # a single 2-element Quantity.
-        vertex_unit=u.degree
 
         longitude, latitude = center
 
@@ -61,8 +60,8 @@ class SphericalCircle(PathPatch):
 
         #projects points > 180 deg into the (-180,180] range
         for index, l in enumerate(lon):
-        	if l > 180. :
-        		lon[index] = lon[index] - 360.
+        	if l > (180. * u.degree).to_value(vertex_unit) :
+        		lon[index] = lon[index] - (360. * u.degree).to_value(vertex_unit)
 
         lon = np.append(lon, lon[0])
         lat = np.append(lat, lat[0])
@@ -71,9 +70,9 @@ class SphericalCircle(PathPatch):
         
         #split path into two sections if circle crosses -180, 180 bounds
         codes = []
-        last = 400.4 #400.4 is a random number large enough so first element is "MOVETO"
+        last = (4000.4 * u.degree).to_value(vertex_unit) #400.4 is a random number large enough so first element is "MOVETO"
         for v in vertices:
-        	if np.absolute(v[0] - last) > 350 :
+        	if np.absolute(v[0] - last) > (300 * u.degree).to_value(vertex_unit) :
         		codes.append(Path.MOVETO)
         	else:
         		codes.append(Path.LINETO)
