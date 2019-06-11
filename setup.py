@@ -129,7 +129,8 @@ setup(
     include_package_data=True,
     keywords='pyipn',
     name='pyipn',
-    packages=find_packages(include=['pyipn','pyipn.io'],exclude=('tests')),
+    packages=find_packages(include=['pyipn','pyipn.io','pyipn.data'],exclude=('tests')),
+    package_data={'': ['template_config.yaml']},
     setup_requires=setup_requirements,
     test_suite='tests',
     tests_require=test_requirements,
@@ -137,7 +138,6 @@ setup(
     version='0.1.0',
     zip_safe=False,
     cmdclass={"upload": UploadCommand},
-    package_data={"": extra_files},
 )
 
 

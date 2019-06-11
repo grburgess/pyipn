@@ -22,33 +22,35 @@ def source_poisson_generator(tstart, tstop, K, p_start, t_rise, t_decay):
     generates time tags sampled from the energy integrated
     lightcurve.
     """
+    if K == 0.:
+        return np.empty(1)
+    else:
+        num_time_steps = 1000
 
-    num_time_steps = 1000
+        time_grid = np.linspace(tstart, tstop + 1.0, num_time_steps)
 
-    time_grid = np.linspace(tstart, tstop + 1.0, num_time_steps)
+        tmp = np.zeros(num_time_steps)
 
-    tmp = np.zeros(num_time_steps)
+        for i in range(num_time_steps):
+            tmp[i] = norris(time_grid[i], K, p_start, t_rise, t_decay)
 
-    for i in range(num_time_steps):
-        tmp[i] = norris(time_grid[i], K, p_start, t_rise, t_decay)
+        fmax = tmp.max() #zeros if p_start > tstop!
 
-    fmax = tmp.max() #zeros if p_start > tstop!
+        time = tstart
 
-    time = tstart
+        arrival_times = [tstart]
 
-    arrival_times = [tstart]
+        while time < tstop:
 
-    while time < tstop:
+            time = time - (1.0 / fmax) * np.log(np.random.rand())
+            test = np.random.rand()
 
-        time = time - (1.0 / fmax) * np.log(np.random.rand())
-        test = np.random.rand()
+            p_test = norris(time, K, p_start, t_rise, t_decay) / fmax
 
-        p_test = norris(time, K, p_start, t_rise, t_decay) / fmax
+            if test <= p_test:
+                arrival_times.append(time)
 
-        if test <= p_test:
-            arrival_times.append(time)
-
-    return np.array(arrival_times)
+        return np.array(arrival_times)
 
 
 @jit

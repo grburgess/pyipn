@@ -1,12 +1,14 @@
 import numpy as np
 import collections
+from itertools import combinations
 import yaml
 from astropy.time import Time
 import astropy.units as u
 import astropy.constants as constants
+from astropy.coordinates import SkyCoord, UnitSphericalRepresentation
 
 from .effective_area import EffectiveArea
-from .geometry import Pointing, DetectorLocation
+from .geometry import Pointing, DetectorLocation, Location
 
 from .grb import GRB
 from .detector import Detector
@@ -70,9 +72,8 @@ class Universe(object):
         """
         # compute which detector sees the GRB first 
         ltd = []
-        grb_vec = self._grb.location.get_cartesian_coord().xyz
-        grb_vec = grb_vec.to(u.km)
-        norm_grb_vec = grb_vec/(np.linalg.norm(grb_vec) * u.km) #normalized vector towards GRB
+        
+        norm_grb_vec = self._grb.location.get_norm_vec(u.km) #normalized vector towards GRB
         
         for name, detector in self._detectors.items():
             
@@ -95,9 +96,9 @@ class Universe(object):
         T0 = 0.0
         for i in range(len(ltd) - 1):
 
-            dt = ((ltd[i + 1] - ltd[i]) * u.km / constants.c).decompose().value
+            dt = ((ltd[i + 1] - ltd[i]) * u.km / constants.c).decompose().value #time in seconds
             assert (
-                dt > 0
+                dt >= 0
             ), "The time diferences should be positive if the ranking worked!"
 
             T0 += dt
@@ -105,7 +106,7 @@ class Universe(object):
             self._time_differences.append(dt)
 
         self._T0 = np.array(self._T0)
-        self._time_differences = np.array(self._time_differences)
+        self._time_differences = np.array(self._time_differences) #time in s
 
         self._T0 = self._T0[unsort]
         self._time_differences[unsort]
@@ -172,3 +173,47 @@ class Universe(object):
                 universe.register_detector(det)
 
             return universe
+
+    def calculate_annulus(self, detector1, detector2):
+        d1, d2 = self._detectors[detector1], self._detectors[detector2]
+        dxyz = (d2.location.get_cartesian_coord().xyz -
+                d1.location.get_cartesian_coord().xyz)
+        
+        #calculate ra and dec of vector d  pointing from detector1 to detector2
+        dcart = Location(SkyCoord(x=dxyz[0], y=dxyz[1], z=dxyz[2], representation_type='cartesian', unit='km'))
+        norm_d = dcart.get_norm_vec(u.km)
+        ra = dcart.coord.represent_as(UnitSphericalRepresentation).lon
+        dec = dcart.coord.represent_as(UnitSphericalRepresentation).lat
+
+        #calculate angle theta between center point d and annulus
+        distance = np.linalg.norm(dxyz) * u.km
+        dt = (self._T0[list(self._detectors.keys()).index(detector1)] -
+              self._T0[list(self._detectors.keys()).index(detector2)]) * u.s
+        #rounding to 15th decimal because small numerical errors cause issues with numbers slightly over 1
+        theta = np.arccos(np.around((constants.c * dt / distance).decompose().value, 15))
+
+        return(norm_d ,np.array([ra.value,dec.value])*ra.unit, theta * u.rad)
+        
+    def localize_GRB(self):
+        M = []
+        b = []
+
+        """
+        build matrix M consisting of connection vectors between two satellites
+        and vector b containing corresponding cos of annulus angles
+        """
+        for (d0,d1) in combinations(self._detectors.keys(), 2):
+            (cart_vec, spherical_vec, theta) = self.calculate_annulus(d0,d1)
+            M.append(cart_vec.value)
+            b.append(np.array([np.cos(theta.value)]))
+            
+        M = np.array(M)
+        b = np.array(b)
+        
+        g = np.linalg.lstsq(M,b,rcond=None)
+        grb_loc = Location(SkyCoord(x=g[0][0][0], y=g[0][1][0], z=g[0][2][0],
+                                    representation_type='cartesian', unit='km'))
+        norm_grb_loc = grb_loc.get_norm_vec(u.km)
+        return grb_loc
+        
+        
