@@ -54,6 +54,7 @@ class Location(object):
         return self._skycoord.represent_as(CartesianRepresentation)
 
     def get_norm_vec(self, unit):
+        assert isinstance(unit, u.Unit), "no (astropy) unit provided to get_morm_vec function!"
         vec = self.get_cartesian_coord().xyz.to(unit)
         norm_vec = vec/np.linalg.norm(vec)
         return norm_vec
