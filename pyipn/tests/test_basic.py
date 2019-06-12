@@ -10,3 +10,7 @@ def test_simple():
     
         lc.display(-10,50,1.)
     print(uni.calculate_annulus("det1","det2"))
+
+
+
+    uni.plot_all_annuli()
