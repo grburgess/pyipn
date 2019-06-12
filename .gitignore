@@ -105,3 +105,4 @@ bin/
 include/
 pyipn/test.ipynb
 .directory
+/examples/template_config.yaml
