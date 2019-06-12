@@ -63,6 +63,7 @@ REQUIRED = [
     "scipy",
     "ipython",
     "matplotlib",
+    "mpltools",
     "h5py",
     "pandas",
     "astropy",
@@ -125,7 +126,7 @@ setup(
     name="pyipn",
     packages=find_packages(exclude=("tests")
     ),
-    package_data=extra_files,
+    package_data={"": extra_files},
     setup_requires=setup_requirements,
     test_suite="tests",
     tests_require=test_requirements,
