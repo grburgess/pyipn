@@ -129,7 +129,10 @@ setup(
     include_package_data=True,
     keywords='pyipn',
     name='pyipn',
-    packages=find_packages(include=['pyipn','pyipn.io'],exclude=('tests')),
+    packages=find_packages(include=['pyipn',
+                                    'pyipn.io'
+    ],
+                           exclude=('tests')),
     setup_requires=setup_requirements,
     test_suite='tests',
     tests_require=test_requirements,
