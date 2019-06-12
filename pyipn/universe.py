@@ -331,7 +331,12 @@ class Universe(object):
 
         fig, ax = plt.subplots(subplot_kw=skw_dict)
 
-        colors = mpl_color.colors_from_cmap(self._n_detectors, cmap=cmap)
+        
+        # get the colors to use
+
+        n_verts = self._n_detectors * (self._n_detectors - 1)/2
+        
+        colors = mpl_color.colors_from_cmap(n_verts, cmap=cmap)
 
         for i, (d1, d2) in enumerate(combinations(self._detectors.keys(), 2)):
 
