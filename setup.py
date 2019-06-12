@@ -68,6 +68,7 @@ REQUIRED = [
     "pandas",
     "astropy",
     "numba",
+    "reproject",
     "pyyaml",
 ]
 
