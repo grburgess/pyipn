@@ -57,14 +57,6 @@ class SphericalCircle(PathPatch):
         # Extract new longitude/latitude in the requested units
         lon = lon.to_value(vertex_unit)
         lat = lat.to_value(vertex_unit)
-
-        #projects points > 180 deg into the (-180,180] range
-        for index, l in enumerate(lon):
-        	if l > (180. * u.degree).to_value(vertex_unit) :
-        		lon[index] = lon[index] - (360. * u.degree).to_value(vertex_unit)
-
-        lon = np.append(lon, lon[0])
-        lat = np.append(lat, lat[0])
         # Create polygon vertices
         vertices = np.array([lon, lat]).transpose()
         
