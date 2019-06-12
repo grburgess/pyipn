@@ -9,3 +9,4 @@ def test_simple():
     for det, lc in uni.light_curves.items():
     
         lc.display(-10,50,1.)
+    print(uni.calculate_annulus("det1","det2"))

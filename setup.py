@@ -12,7 +12,6 @@ import sys
 from shutil import rmtree
 
 
-
 class UploadCommand(Command):
     """Support setup.py upload."""
 
@@ -50,12 +49,11 @@ class UploadCommand(Command):
         sys.exit()
 
 
-
 # Package meta-data.
 NAME = "pyipn"
 DESCRIPTION = "A generic IPN simulator"
-URL = 'https://github.com/grburgess/pyipn'
-EMAIL = 'jburgess@mpe.mpg.de'
+URL = "https://github.com/grburgess/pyipn"
+EMAIL = "jburgess@mpe.mpg.de"
 AUTHOR = "J. Michael Burgess"
 REQUIRES_PYTHON = ">=2.7.0"
 VERSION = None
@@ -67,12 +65,10 @@ REQUIRED = [
     "matplotlib",
     "h5py",
     "pandas",
-    'astropy',
-    'numba',
-    'pyyaml',
-
+    "astropy",
+    "numba",
+    "pyyaml",
 ]
-
 
 
 # Create list of data files
@@ -89,65 +85,52 @@ def find_data_files(directory):
     return paths
 
 
-
 extra_files = find_data_files("pyipn/data")
 
 
-
-with open('README.rst') as readme_file:
+with open("README.rst") as readme_file:
     readme = readme_file.read()
 
-with open('HISTORY.rst') as history_file:
+with open("HISTORY.rst") as history_file:
     history = history_file.read()
 
 requirements = REQUIRED
 
-setup_requirements = ['pytest-runner', ]
+setup_requirements = ["pytest-runner"]
 
-test_requirements = ['pytest', ]
+test_requirements = ["pytest"]
 
 setup(
     author=AUTHOR,
     author_email=EMAIL,
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',
-        'Natural Language :: English',
+        "Development Status :: 2 - Pre-Alpha",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: BSD License",
+        "Natural Language :: English",
         "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
     ],
     description=DESCRIPTION,
     install_requires=requirements,
     license="BSD license",
-    long_description=readme + '\n\n' + history,
+    long_description=readme + "\n\n" + history,
     include_package_data=True,
-    keywords='pyipn',
-    name='pyipn',
-    packages=find_packages(include=['pyipn',
-                                    'pyipn.io'
-    ],
-                           exclude=('tests')),
+    keywords="pyipn",
+    name="pyipn",
+    packages=find_packages(exclude=("tests")
+    ),
+    package_data=extra_files,
     setup_requires=setup_requirements,
-    test_suite='tests',
+    test_suite="tests",
     tests_require=test_requirements,
-    url='https://github.com/grburgess/pyipn',
-    version='0.1.0',
+    url="https://github.com/grburgess/pyipn",
+    version="0.1.0",
     zip_safe=False,
     cmdclass={"upload": UploadCommand},
-    package_data={"": extra_files},
 )
-
-
-
-
-
-
-
-
-
