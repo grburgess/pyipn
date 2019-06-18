@@ -3,7 +3,7 @@ import astropy.constants as constants
 
 
 from .lightcurve import LightCurve
-from .possion_gen import source_poisson_generator, background_poisson_generator
+from .poisson_gen import source_poisson_generator, background_poisson_generator
 
 
 class Detector(object):
