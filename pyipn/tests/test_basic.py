@@ -14,3 +14,4 @@ def test_simple():
 
 
     uni.plot_all_annuli()
+    uni.localize_GRB()

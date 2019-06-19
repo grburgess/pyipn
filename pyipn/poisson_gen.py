@@ -22,6 +22,8 @@ def source_poisson_generator(tstart, tstop, K, p_start, t_rise, t_decay):
     generates time tags sampled from the energy integrated
     lightcurve.
     """
+    assert (tstart<tstop), "tstart >= tstop"
+
     if K == 0.:
         return np.empty(1)
     else:
@@ -61,6 +63,7 @@ def background_poisson_generator(tstart, tstop, slope, intercept):
     generates time tags sampled from the energy integrated
     lightcurve.
     """
+    assert (tstart<tstop), "tstart >= tstop"
 
     num_time_steps = 1000
 
