@@ -23,7 +23,7 @@ detectors:
     # it's location in GCRS
     ra: 10.
     dec: 0.
-    altitude: 30000000. # km
+    altitude: 3000000. # km
     time: '2010-01-01T00:00:00' # time of detection
 
     # Where the detector point in the sky

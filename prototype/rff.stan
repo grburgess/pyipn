@@ -50,6 +50,8 @@ data {
   int<lower=1> N2; // number of time bins for LC 2
   vector[N1] time1; // mid-points of LC 1
   vector[N2] time2; // mid-points of LC 2
+  vector[N1] exposure1; // mid-points of LC 1
+  vector[N2] exposure2; // mid-points of LC 2
   int counts1[N1]; // counts in LC 1
   int counts2[N2]; // counts in LC 2
 
@@ -159,8 +161,8 @@ model {
   
   dt ~ normal(30,10);
   
-  counts1 ~ poisson( fhat1 + bkg1);
-  counts2 ~ poisson( fhat2 + bkg2);
+  counts1 ~ poisson( exposure1 .* (fhat1 + bkg1));
+  counts2 ~ poisson( exposure2 .* (fhat2 + bkg2));
 }
 
 
@@ -177,13 +179,13 @@ generated quantities {
   
   for (n in 1:N1) {
 
-    ppc1[n] = poisson_rng( fhat1[n] + bkg1 );
+    ppc1[n] = poisson_rng( exposure1[n] *(fhat1[n] + bkg1) );
 
   }
   
   for (n in 1:N2) {
 
-    ppc2[n] = poisson_rng( fhat2[n] + bkg2 );
+    ppc2[n] = poisson_rng( exposure2[n] *( fhat2[n] + bkg2) );
 
   }
 
