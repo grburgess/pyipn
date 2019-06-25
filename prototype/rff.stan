@@ -77,7 +77,9 @@ transformed data {
   //  real dt = 29.64;
   real tstart = -1;
   real tstop = 10;
+  real strength = 50.;
 
+  
   // for the non-delayed LC, let's go ahead and compute the fucking matrices
 
   {
@@ -114,8 +116,8 @@ parameters {
 
   real<lower=0> dt; // the time delay
 
-  real log_amplitude1; // independent amplitude1 of LC 1; probably do not need right now...
-  real log_amplitude2; // independent amplitude1 of LC 2; probably do not need right now...
+  //  real log_amplitude1; // independent amplitude1 of LC 1; probably do not need right now...
+  // real log_amplitude2; // independent amplitude1 of LC 2; probably do not need right now...
   
   
 }
@@ -126,7 +128,7 @@ transformed parameters {
   //  real<lower=0> dt = 10^log_dt;
 
   // mulitply by the filter... maybe remove 
-  fhat1 = filter(time1, tstart, tstop  , 100.) .* exp(cosfeatures1 * beta1 + sinfeatures1*beta2 + log_amplitude1);
+  fhat1 = filter(time1, tstart, tstop  , strength) .* exp(cosfeatures1 * beta1 + sinfeatures1*beta2 );
   
 
  
@@ -136,7 +138,7 @@ transformed parameters {
 
     matrix[N2,k] tmp[2] = cos_sin_features(N2, k, time2 - dt, omega, bw);
 
-    fhat2 = filter(time2 - dt, tstart, tstop ,  100.) .* exp(tmp[1,:,:] * beta1 + tmp[2,:,:] * beta2 + log_amplitude2);
+    fhat2 = filter(time2 - dt, tstart, tstop ,  strength) .* exp(tmp[1,:,:] * beta1 + tmp[2,:,:] * beta2);
 
   }
 
@@ -151,9 +153,9 @@ model {
   beta2 ~ std_normal();
   bkg1 ~ normal(50,10);
   bkg2 ~ normal(50,10);
-
-  log_amplitude1 ~ normal(0,1);
-  log_amplitude2 ~ normal(0,1);
+  
+  /* log_amplitude1 ~ normal(0,1); */
+  /* log_amplitude2 ~ normal(0,1); */
   
   dt ~ normal(30,10);
   
@@ -166,7 +168,7 @@ model {
 generated quantities {
 
 
-  vector[N_model] predict = filter(predict_time, tstart, tstop , 100) .* exp(predict_cosfeatures * beta1 + predict_sinfeatures * beta2);
+  vector[N_model] predict = filter(predict_time, tstart, tstop , strength) .* exp(predict_cosfeatures * beta1 + predict_sinfeatures * beta2);
 
   int ppc1[N1];
   int ppc2[N2];
