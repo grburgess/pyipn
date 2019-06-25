@@ -1,6 +1,14 @@
 functions {
 
   matrix[] cos_sin_features(int N, int k, vector time, vector omega, real bw) {
+    /*
+      random fourier features based off of 
+      https://bitbucket.org/flaxter/random-fourier-features-in-stan/src/master/
+      
+     */
+
+    // store as an array of matrices so that I can return
+    // both at the same time
     matrix[N,k] cos_sin_features[2];
     real scale;
     matrix[N,k] features;
@@ -23,7 +31,11 @@ functions {
   }
 
   vector filter(vector time, real tstart, real tstop,  real strength) {
-  
+    /*
+
+      A two-sided filter that forces the light curve prediction to zero 
+      outside of a start and stop time. This may not be needed in the future
+     */
     return inv_logit(strength * (time - tstart) ) .* (1 - inv_logit(strength * (time- tstop) ));
   
 }
@@ -34,18 +46,20 @@ functions {
 
 
 data {
-  int<lower=1> N1;
-  int<lower=1> N2;
-  vector[N1] time1;
-  vector[N2] time2;
-  int counts1[N1];
-  int counts2[N2];
+  int<lower=1> N1; // number of time bins for LC 1
+  int<lower=1> N2; // number of time bins for LC 2
+  vector[N1] time1; // mid-points of LC 1
+  vector[N2] time2; // mid-points of LC 2
+  int counts1[N1]; // counts in LC 1
+  int counts2[N2]; // counts in LC 2
 
-  real bw;
-  int<lower=1> k;
+  real bw; // the band width of the FFs; lower => smoother
+  int<lower=1> k; // number of FFs
   
-  vector[k] omega;
+  vector[k] omega; // this weird MC integration thing. I suppose I could do this in stan
 
+
+  // predcition for plotting
   int N_model;
   vector[N_model] predict_time;
 
@@ -64,6 +78,8 @@ transformed data {
   real tstart = -1;
   real tstop = 10;
 
+  // for the non-delayed LC, let's go ahead and compute the fucking matrices
+
   {
 
     matrix[N1,k] tmp[2] = cos_sin_features(N1, k, time1, omega, bw);
@@ -74,45 +90,48 @@ transformed data {
 
   }
 
-
-    {
+  // sample for the plotting stuffs
+  
+  {
 
     matrix[N_model,k] tmp[2] = cos_sin_features(N_model, k, predict_time, omega, bw);
-
+    
     predict_cosfeatures = tmp[1,:,:];
     predict_sinfeatures = tmp[2,:,:];
-
-
+    
+    
   }
 
   
 }
 parameters {
-  vector[k] beta1;
-  vector[k] beta2;
 
-  real<lower=0> bkg1;
-  real<lower=0> bkg2;
+  vector[k] beta1; // the amplitude along the cos basis
+  vector[k] beta2; // the amplitude along the sin basis
 
-  real<lower=0> dt;
+  real<lower=0> bkg1; // the bkg for LC 1;  right now this is a constant
+  real<lower=0> bkg2; // the bkg for LC 2;  right now this is a constant
 
-  real log_amplitude1;
-  real log_amplitude2;
+  real<lower=0> dt; // the time delay
+
+  real log_amplitude1; // independent amplitude1 of LC 1; probably do not need right now...
+  real log_amplitude2; // independent amplitude1 of LC 2; probably do not need right now...
   
   
 }
 transformed parameters {
-  vector[N1] fhat1;
-  vector[N2] fhat2;
+  vector[N1] fhat1; // raw GP for LC 1
+  vector[N2] fhat2; // raw GP for LC 2
 
   //  real<lower=0> dt = 10^log_dt;
 
+  // mulitply by the filter... maybe remove 
   fhat1 = filter(time1, tstart, tstop  , 100.) .* exp(cosfeatures1 * beta1 + sinfeatures1*beta2 + log_amplitude1);
   
 
  
 
-  
+  // have to compute the matrices on the fly for the delayed LC
   {
 
     matrix[N2,k] tmp[2] = cos_sin_features(N2, k, time2 - dt, omega, bw);
@@ -126,6 +145,8 @@ transformed parameters {
 
 model {
 
+  // priors 
+  
   beta1 ~ std_normal();
   beta2 ~ std_normal();
   bkg1 ~ normal(50,10);
@@ -150,6 +171,8 @@ generated quantities {
   int ppc1[N1];
   int ppc2[N2];
 
+  // PPCs
+  
   for (n in 1:N1) {
 
     ppc1[n] = poisson_rng( fhat1[n] + bkg1 );
