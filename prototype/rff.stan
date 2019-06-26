@@ -77,8 +77,8 @@ transformed data {
   matrix[N_model,k] predict_sinfeatures;
   
   //  real dt = 29.64;
-  real tstart = -1;
-  real tstop = 15;
+  real tstart = -5;
+  real tstop = 20;
   real strength = 50.;
 
   
@@ -130,7 +130,8 @@ transformed parameters {
   //  real<lower=0> dt = 10^log_dt;
 
   // mulitply by the filter... maybe remove 
-  fhat1 = filter(time1, tstart, tstop  , strength) .* exp(cosfeatures1 * beta1 + sinfeatures1*beta2 + log_amplitude1);
+  //  fhat1 = filter(time1, tstart, tstop  , strength) .* exp(cosfeatures1 * beta1 + sinfeatures1*beta2 + log_amplitude1);
+  fhat1 = exp(cosfeatures1 * beta1 + sinfeatures1*beta2 + log_amplitude1);
   
 
  
@@ -140,7 +141,8 @@ transformed parameters {
 
     matrix[N2,k] tmp[2] = cos_sin_features(N2, k, time2 - dt, omega, bw);
 
-    fhat2 = filter(time2 - dt, tstart, tstop ,  strength) .* exp(tmp[1,:,:] * beta1 + tmp[2,:,:] * beta2 + log_amplitude2);
+    //    fhat2 = filter(time2 - dt, tstart, tstop ,  strength) .* exp(tmp[1,:,:] * beta1 + tmp[2,:,:] * beta2 + log_amplitude2);
+    fhat2 = exp(tmp[1,:,:] * beta1 + tmp[2,:,:] * beta2 + log_amplitude2);
 
   }
 
@@ -170,7 +172,8 @@ model {
 generated quantities {
 
 
-  vector[N_model] predict = filter(predict_time, tstart, tstop , strength) .* exp(predict_cosfeatures * beta1 + predict_sinfeatures * beta2);
+  // vector[N_model] predict = filter(predict_time, tstart, tstop , strength) .* exp(predict_cosfeatures * beta1 + predict_sinfeatures * beta2);
+  vector[N_model] predict = exp(predict_cosfeatures * beta1 + predict_sinfeatures * beta2);
 
   int ppc1[N1];
   int ppc2[N2];
