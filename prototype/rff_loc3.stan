@@ -1,5 +1,29 @@
 functions {
 
+  matrix[] cos_sin_features_nonstationary(int N, int k, vector time, vector omega, real bw_one, real bw_two) {
+    /*
+      random fourier features based off of
+      https://bitbucket.org/flaxter/random-fourier-features-in-stan/src/master/
+    */
+
+    // store as an array of matrices so that I can return
+    // both at the same time
+    matrix[N,k] cos_sin_features[2];
+    real scale;
+    matrix[N,k] features_one;
+    matrix[N,k] features_two;
+
+    features_one = time * omega' * bw_one;
+    features_two = time * omega' * bw_two;
+
+    scale = sqrt(2.0/k);
+    cos_sin_features[1,:,:] = (cos(features_one)+cos(features_two)) * scale;
+    cos_sin_features[2,:,:] = (sin(features_one)+sin(features_two)) * scale;
+    return cos_sin_features;
+
+  }
+
+  
   matrix[] cos_sin_features(int N, int k, vector time, vector omega, real bw) {
     /*
       random fourier features based off of
@@ -22,16 +46,30 @@ functions {
 
   }
 
+  /* vector filter(vector time, real tstart, real tstop,  real strength) { */
+  /*   /\* */
+
+  /*     A two-sided filter that forces the light curve prediction to zero */
+  /*     outside of a start and stop time. This may not be needed in the future */
+  /*   *\/ */
+  /*   return inv_logit(strength * (time - tstart) ) .* (1 - inv_logit(strength * (time- tstop) )); */
+
+  /* } */
+
+
+
   vector filter(vector time, real tstart, real tstop,  real strength) {
     /*
 
       A two-sided filter that forces the light curve prediction to zero
       outside of a start and stop time. This may not be needed in the future
     */
-    return inv_logit(strength * (time - tstart) ) .* (1 - inv_logit(strength * (time- tstop) ));
+    return 0.25 * (1+tanh(strength * (time - tstart) )) .* (1 - tanh(strength * (time- tstop) ));
 
   }
 
+
+  
 
   real time_delay( vector grb_xyz, vector sc_pos1, vector sc_pos2) {
 
@@ -73,6 +111,7 @@ data {
 
   
   real bw; // the band width of the FFs; lower => smoother
+  real bw2; // the band width of the FFs; lower => smoother
   int<lower=1> k; // number of FFs
 
   vector[k] omega; // this weird MC integration thing. I suppose I could do this in stan
@@ -98,7 +137,7 @@ transformed data {
 
   {
 
-    matrix[N1,k] tmp[2] = cos_sin_features(N1, k, time1, omega, bw);
+    matrix[N1,k] tmp[2] = cos_sin_features_nonstationary(N1, k, time1, omega, bw, bw2);
 
     cosfeatures1 = tmp[1,:,:];
     sinfeatures1 = tmp[2,:,:];
@@ -109,7 +148,7 @@ transformed data {
 
   {
 
-    matrix[N_model,k] tmp[2] = cos_sin_features(N_model, k, predict_time, omega, bw);
+    matrix[N_model,k] tmp[2] = cos_sin_features_nonstationary(N_model, k, predict_time, omega, bw, bw2);
 
     predict_cosfeatures = tmp[1,:,:];
     predict_sinfeatures = tmp[2,:,:];
@@ -162,7 +201,7 @@ transformed parameters {
   // have to compute the matrices on the fly for the delayed LC
   {
 
-    matrix[N2,k] tmp[2] = cos_sin_features(N2, k, time2 - dt_1_2, omega, bw);
+    matrix[N2,k] tmp[2] = cos_sin_features_nonstationary(N2, k, time2 - dt_1_2, omega, bw, bw2);
 
     fhat2 = filter(time2 - dt_1_2, tstart, tstop ,  strength) .* exp(tmp[1,:,:] * beta1 + tmp[2,:,:] * beta2 + log_amplitude2);
 
@@ -171,7 +210,7 @@ transformed parameters {
     // have to compute the matrices on the fly for the delayed LC
   {
 
-    matrix[N3,k] tmp[2] = cos_sin_features(N2, k, time3 - dt_1_3, omega, bw);
+    matrix[N3,k] tmp[2] = cos_sin_features_nonstationary(N3, k, time3 - dt_1_3, omega, bw, bw2);
 
     fhat3 = filter(time3 - dt_1_3, tstart, tstop ,  strength) .* exp(tmp[1,:,:] * beta1 + tmp[2,:,:] * beta2 + log_amplitude3);
 
