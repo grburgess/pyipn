@@ -129,8 +129,8 @@ transformed data {
   matrix[N_model,k] predict_sinfeatures;
 
   //  real dt = 29.64;
-  real tstart = -2; 
-  real tstop = 10;
+  real tstart = -5; 
+  real tstop = 20;
   real strength = 20.;
 
   // for the non-delayed LC, let's go ahead and compute the fucking matrices
@@ -197,6 +197,7 @@ transformed parameters {
 
   // mulitply by the filter... maybe remove
   fhat1 = filter(time1, tstart, tstop  , strength) .* exp(cosfeatures1 * beta1 + sinfeatures1*beta2 + log_amplitude1);
+  //fhat1 =  exp(cosfeatures1 * beta1 + sinfeatures1*beta2 + log_amplitude1);
 
   // have to compute the matrices on the fly for the delayed LC
   {
@@ -204,6 +205,7 @@ transformed parameters {
     matrix[N2,k] tmp[2] = cos_sin_features_nonstationary(N2, k, time2 - dt_1_2, omega, bw, bw2);
 
     fhat2 = filter(time2 - dt_1_2, tstart, tstop ,  strength) .* exp(tmp[1,:,:] * beta1 + tmp[2,:,:] * beta2 + log_amplitude2);
+    //fhat2 = exp(tmp[1,:,:] * beta1 + tmp[2,:,:] * beta2 + log_amplitude2);
 
   }
 
@@ -213,6 +215,7 @@ transformed parameters {
     matrix[N3,k] tmp[2] = cos_sin_features_nonstationary(N3, k, time3 - dt_1_3, omega, bw, bw2);
 
     fhat3 = filter(time3 - dt_1_3, tstart, tstop ,  strength) .* exp(tmp[1,:,:] * beta1 + tmp[2,:,:] * beta2 + log_amplitude3);
+    //    fhat3 =  exp(tmp[1,:,:] * beta1 + tmp[2,:,:] * beta2 + log_amplitude3);
 
   }
 
@@ -245,7 +248,8 @@ model {
 
 generated quantities {
 
-  vector[N_model] predict = filter(predict_time, tstart, tstop , strength) .* exp(predict_cosfeatures * beta1 + predict_sinfeatures * beta2);
+  /* //  vector[N_model] predict = filter(predict_time, tstart, tstop , strength) .* exp(predict_cosfeatures * beta1 + predict_sinfeatures * beta2); */
+  /* vector[N_model] predict =  exp(predict_cosfeatures * beta1 + predict_sinfeatures * beta2); */
 
   int ppc1[N1];
   int ppc2[N2];

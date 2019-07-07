@@ -1,6 +1,31 @@
 functions {
 
-  matrix[] cos_sin_features_nonstationary(int N, int k, vector time, vector omega, real bw) {
+  /* matrix[] cos_sin_features_nonstationary(int N, int k, vector time, vector omega, real bw) { */
+  /*   /\* */
+  /*     random fourier features based off of */
+  /*     https://bitbucket.org/flaxter/random-fourier-features-in-stan/src/master/ */
+  /*   *\/ */
+
+  /*   // store as an array of matrices so that I can return */
+  /*   // both at the same time */
+  /*   matrix[N,k] cos_sin_features[2]; */
+
+  /*   matrix[N,k] features_one; */
+  /*   matrix[N,k] features_two; */
+
+  /*   features_one = time * omega' * bw; */
+  /*   features_two = time * omega'  * 0.5 * bw; */
+
+    
+  /*   cos_sin_features[1,:,:] = (cos(features_one)+cos(features_two)); */
+  /*   cos_sin_features[2,:,:] = (sin(features_one)+sin(features_two)); */
+  /*   return cos_sin_features; */
+
+  /* } */
+
+
+
+  matrix[] cos_sin_features_nonstationary(int N, int k, matrix features_one, matrix features_two) {
     /*
       random fourier features based off of
       https://bitbucket.org/flaxter/random-fourier-features-in-stan/src/master/
@@ -10,11 +35,7 @@ functions {
     // both at the same time
     matrix[N,k] cos_sin_features[2];
     real scale;
-    matrix[N,k] features_one;
-    matrix[N,k] features_two;
 
-    features_one = time * omega' * bw;
-    features_two = time * omega'  * 0.5 * bw;
 
     scale = sqrt(2.0/k);
     cos_sin_features[1,:,:] = (cos(features_one)+cos(features_two)) * scale;
@@ -114,6 +135,18 @@ data {
 
 }
 transformed data {
+
+  // make the features
+
+  real scale = 2.0 * inv_sqrt(k);
+
+
+  // do not multiply a matrix by a constant
+  matrix [N1, k] features_one1 = (bw * time1) * omega';
+  matrix [N1, k] features_two1 = ( 0.5 * bw * time1 ) * omega' ;
+
+  
+
   matrix[N1,k] cosfeatures1;
   matrix[N1,k] sinfeatures1;
 
@@ -121,18 +154,15 @@ transformed data {
   matrix[N_model,k] predict_sinfeatures;
 
   //  real dt = 29.64;
-  real tstart = -2; 
-  real tstop = 10;
-  real strength = 50.;
-
-  real bw2 = bw/2.;
-
+  real tstart = -5; 
+  real tstop = 20;
+  real strength = 10.;
   
   // for the non-delayed LC, let's go ahead and compute the fucking matrices
 
   {
 
-    matrix[N1,k] tmp[2] = cos_sin_features_nonstationary(N1, k, time1, omega, bw);
+    matrix[N1,k] tmp[2] = cos_sin_features_nonstationary(N1, k,features_one1, features_two1);
 
     cosfeatures1 = tmp[1,:,:];
     sinfeatures1 = tmp[2,:,:];
@@ -143,10 +173,10 @@ transformed data {
 
   {
 
-    matrix[N_model,k] tmp[2] = cos_sin_features_nonstationary(N_model, k, predict_time, omega, bw);
+    /* matrix[N_model,k] tmp[2] = cos_sin_features_nonstationary(N_model, k, predict_time, omega, bw); */
 
-    predict_cosfeatures = tmp[1,:,:];
-    predict_sinfeatures = tmp[2,:,:];
+    /* predict_cosfeatures = tmp[1,:,:]; */
+    /* predict_sinfeatures = tmp[2,:,:]; */
 
   }
 
@@ -156,8 +186,8 @@ parameters {
   vector[k] beta1; // the amplitude along the cos basis
   vector[k] beta2; // the amplitude along the sin basis
 
-  real<lower=0> bkg1; // the bkg for LC 1;  right now this is a constant
-  real<lower=0> bkg2; // the bkg for LC 2;  right now this is a constant
+  real  log_bkg1; // the bkg for LC 1;  right now this is a constant
+  real  log_bkg2; // the bkg for LC 2;  right now this is a constant
 
   unit_vector[3] grb_xyz;
 
@@ -173,9 +203,9 @@ parameters {
 transformed parameters {
   vector[N1] fhat1; // raw GP for LC 1
   vector[N2] fhat2; // raw GP for LC 2
-
-  real<lower = -pi(), upper = pi()> grb_phi = atan2(grb_xyz[2], grb_xyz[1]);
-  real<lower=0, upper = pi()> grb_theta = acos(grb_xyz[3]);
+  real bkg1 = 10^log_bkg1;
+  real bkg2 = 10^log_bkg2;
+  
 
   
   //  real duration = 10^log_duration;
@@ -186,14 +216,20 @@ transformed parameters {
   real dt = time_delay(grb_xyz, sc_pos1, sc_pos2);
 
   // mulitply by the filter... maybe remove
-  fhat1 = filter(time1, tstart, tstop  , strength) .* exp(cosfeatures1 * beta1 + sinfeatures1*beta2 + log_amplitude1);
+  fhat1 = filter(time1, tstart, tstop  , strength) .* exp( scale * (cosfeatures1 * beta1 + sinfeatures1*beta2) + log_amplitude1);
+  //fhat1 =  exp(cosfeatures1 * beta1 + sinfeatures1*beta2 + log_amplitude1);
 
   // have to compute the matrices on the fly for the delayed LC
   {
 
-    matrix[N2,k] tmp[2] = cos_sin_features_nonstationary(N2, k, time2 - dt, omega, bw);
+    matrix [N2, k] features_one2 = (bw * (time2 -dt)) * omega';
+    matrix [N2, k] features_two2 = 0.5 * features_one2;
 
-    fhat2 = filter(time2 - dt, tstart, tstop ,  strength) .* exp(tmp[1,:,:] * beta1 + tmp[2,:,:] * beta2 + log_amplitude2);
+
+    matrix[N2,k] tmp[2] = cos_sin_features_nonstationary(N2, k, features_one2, features_two2);
+
+    fhat2 = filter(time2 - dt, tstart, tstop ,  strength) .* exp( scale * (tmp[1,:,:] * beta1 + tmp[2,:,:] * beta2) + log_amplitude2 );
+    //fhat2 =  exp(tmp[1,:,:] * beta1 + tmp[2,:,:] * beta2 + log_amplitude2);
 
   }
 
@@ -205,8 +241,8 @@ model {
 
   beta1 ~ std_normal();
   beta2 ~ std_normal();
-  bkg1 ~ normal(50,10);
-  bkg2 ~ normal(50,10);
+  log_bkg1 ~ normal(log10(50), 1);
+  log_bkg2 ~ normal(log10(50), 1);
 
   log_amplitude1 ~ normal(0,1);
   log_amplitude2 ~ normal(0,1);
@@ -221,8 +257,13 @@ model {
 
 generated quantities {
 
-  vector[N_model] predict = filter(predict_time, tstart, tstop , strength) .* exp(predict_cosfeatures * beta1 + predict_sinfeatures * beta2);
+  /* // vector[N_model] predict = filter(predict_time, tstart, tstop , strength) .* exp(predict_cosfeatures * beta1 + predict_sinfeatures * beta2); */
+  /* vector[N_model] predict =  exp(predict_cosfeatures * beta1 + predict_sinfeatures * beta2); */
 
+  real grb_phi = atan2(grb_xyz[2], grb_xyz[1]);
+  real grb_theta = -( acos(grb_xyz[3]) - 0.5*pi());
+
+  
   int ppc1[N1];
   int ppc2[N2];
 
