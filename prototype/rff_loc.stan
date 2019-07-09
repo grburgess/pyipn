@@ -34,12 +34,12 @@ functions {
     // store as an array of matrices so that I can return
     // both at the same time
     matrix[N,k] cos_sin_features[2];
-    real scale;
 
 
-    scale = sqrt(2.0/k);
-    cos_sin_features[1,:,:] = (cos(features_one)+cos(features_two)) * scale;
-    cos_sin_features[2,:,:] = (sin(features_one)+sin(features_two)) * scale;
+
+
+    cos_sin_features[1,:,:] = (cos(features_one)+cos(features_two));
+    cos_sin_features[2,:,:] = (sin(features_one)+sin(features_two));
     return cos_sin_features;
 
   }

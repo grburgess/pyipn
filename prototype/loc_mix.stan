@@ -34,14 +34,14 @@ functions {
     // store as an array of matrices so that I can return
     // both at the same time
     matrix[N,k] cos_sin_features[2];
-    real scale;
+
     matrix[N,k] features;
 
     features = time * omega' * bw;
 
-    scale = sqrt(2.0/k);
-    cos_sin_features[1,:,:] = cos(features) * scale;
-    cos_sin_features[2,:,:] = sin(features) * scale;
+
+    cos_sin_features[1,:,:] = cos(features);
+    cos_sin_features[2,:,:] = sin(features);
     return cos_sin_features;
 
   }
@@ -85,12 +85,10 @@ data {
   int<lower=1> k; // number of FFs
 
   int<lower=1> k2;
-  vector[k] omega; // this weird MC integration thing. I suppose I could do this in stan
-  vector[k2] omega2; // this weird MC integration thing. I suppose I could do this in stan
 
   // predcition for plotting
-  int N_model;
-  vector[N_model] predict_time;
+  //int N_model;
+  //  vector[N_model] predict_time;
 
 }
 transformed data {
@@ -100,26 +98,37 @@ transformed data {
   matrix[N1,k2] cosfeatures_onoff1;
   matrix[N1,k2] sinfeatures_onoff1;
 
-
-  matrix[N_model,k] predict_cosfeatures;
-  matrix[N_model,k] predict_sinfeatures;
-
-
-
   real scale = 2.0 * inv_sqrt(k);
+  real scale2 = 2.0 * inv_sqrt(k2);
+  vector[k] omega; // this weird MC integration thing. I suppose I could do this in stan
+  vector[k2] omega2; // this weird MC integration thing. I suppose I could do this in stan
 
-  
-  // for the non-delayed LC, let's go ahead and compute the fucking matrices
+  for (i in 1:k) {
 
-  {
-
-    matrix[N1,k] tmp[2] = cos_sin_features_nonstationary(N1, k, time1, omega, bw);
-
-    cosfeatures1 = tmp[1,:,:];
-    sinfeatures1 = tmp[2,:,:];
+    omega[i] =  normal_rng(0,1);
 
   }
 
+   for (i in 1:k2) {
+
+    omega2[i] =  normal_rng(0,1);
+
+  }
+
+
+  {
+    
+    matrix[N1,k] tmp[2] = cos_sin_features_nonstationary(N1, k, time1, omega, bw);
+    
+    cosfeatures1 = tmp[1,:,:];
+    sinfeatures1 = tmp[2,:,:];
+
+    
+  }
+
+  
+
+  // for the non-delayed LC, let's go ahead and compute the fucking matrices
 
   {
 
@@ -130,18 +139,6 @@ transformed data {
 
   }
 
-
-  
-  // sample for the plotting stuffs
-
-  {
-
-    matrix[N_model,k] tmp[2] = cos_sin_features_nonstationary(N_model, k, predict_time, omega, bw);
-
-    predict_cosfeatures = tmp[1,:,:];
-    predict_sinfeatures = tmp[2,:,:];
-
-  }
 
 }
 parameters {
@@ -166,42 +163,37 @@ parameters {
   real log_amplitude1; // independent amplitude1 of LC 1; probably do not need right now...
   real log_amplitude2; // independent amplitude1 of LC 2; probably do not need right now...
 
+
+  
 }
 transformed parameters {
   vector[N1] fhat1; // raw GP for LC 1
   vector[N2] fhat2; // raw GP for LC 2
   vector[N1] grb_window1;
   vector[N2] grb_window2;
-
-  
-  //  real duration = 10^log_duration;
-
-  //  real tstop = tstart + duration;
-
   
   real dt = time_delay(grb_xyz, sc_pos1, sc_pos2);
 
+  fhat1 = exp((cosfeatures1*beta1 + sinfeatures1*beta2) * scale + log_amplitude1);  
   // mulitply by the filter... maybe remove
-  fhat1 = exp((cosfeatures1*beta1 + sinfeatures1*beta2) * scale + log_amplitude1);
 
-  grb_window1 = inv_logit(-3 + (cosfeatures_onoff1 * beta1_onoff + sinfeatures_onoff1 * beta2_onoff) * scale );
+  grb_window1 = inv_logit(-3 + (cosfeatures_onoff1 * beta1_onoff + sinfeatures_onoff1 * beta2_onoff) * scale2 );
 
-      {
-
-	matrix[N2, k2] tmp[2] = cos_sin_features(N2, k2, time2 - dt, omega2, 1.);
-
-	grb_window2 = inv_logit(-3 + (tmp[1,:,:] * beta1_onoff + tmp[2,:,:] * beta2_onoff) * scale ); 
-      
+  {
+    
+    matrix[N2, k2] tmp[2] = cos_sin_features(N2, k2, time2 - dt, omega2, 1.);
+    
+    grb_window2 = inv_logit(-3 + (tmp[1,:,:] * beta1_onoff + tmp[2,:,:] * beta2_onoff) * scale2 ); 
+    
   }
   
   // have to compute the matrices on the fly for the delayed LC
   {
-
+    
     matrix[N2,k] tmp[2] = cos_sin_features_nonstationary(N2, k, time2 - dt, omega, bw);
-
+    
     fhat2 = exp((tmp[1,:,:] * beta1 + tmp[2,:,:] * beta2) * scale  + log_amplitude2);
-
-
+    
   }
 
 }
@@ -220,6 +212,7 @@ model {
   bkg1 ~ normal(50,10);
   bkg2 ~ normal(50,10);
 
+  //log_bw ~normal(-1,.5);
   log_amplitude1 ~ normal(0,1);
   log_amplitude2 ~ normal(0,1);
 
