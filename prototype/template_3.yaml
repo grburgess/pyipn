@@ -1,0 +1,64 @@
+## Specify the GRB parameters
+
+grb:
+
+  # Location and distance (degrees and Mpc)
+  ra: 15
+  dec: 30.
+  distance: 500.
+
+  # lightcurve
+  K: 100 # intensity
+  t_rise: .5 # rise time
+  t_decay: 2.1 # decay time
+
+
+# specify the detectors
+# each entry is treated as the name of the detector
+detectors:
+
+  # name the detector
+  det1:
+
+    # it's location in GCRS
+    ra: 65.
+    dec: -60.
+    altitude: 15300. # km
+    time: '2010-01-01T00:00:00' # time of detection
+
+    # Where the detector point in the sky
+    pointing:
+      ra: 15.
+      dec: 30.
+
+    # the total effective area
+    effective_area: 1.
+
+
+  # add more detectors!
+  
+  det2:
+
+    ra: 270.
+    dec: 70.
+    altitude: 500.
+    time: '2010-01-01T00:00:00'
+    
+    pointing:
+      ra: 15.
+      dec: 30.
+
+    effective_area: 1.
+
+  det3:
+
+     ra: 10.
+     dec: -70.
+     altitude: 1500000.
+     time: '2010-01-01T00:00:00'
+    
+     pointing:
+       ra: 15.
+       dec: 30.
+
+     effective_area: 1.
