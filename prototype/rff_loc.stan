@@ -183,11 +183,10 @@ transformed data {
 }
 parameters {
 
-  vector[k] beta1; // the amplitude along the cos basis
-  vector[k] beta2; // the amplitude along the sin basis
+  vector[k] beta[2]; // the amplitude along the cos basis
 
-  real  log_bkg1; // the bkg for LC 1;  right now this is a constant
-  real  log_bkg2; // the bkg for LC 2;  right now this is a constant
+
+  vector[2]  log_bkg;
 
   unit_vector[3] grb_xyz;
 
@@ -196,8 +195,7 @@ parameters {
   //real<lower=0, upper=max(time2)> dt; // the time delay
 
   
-  real log_amplitude1; // independent amplitude1 of LC 1; probably do not need right now...
-  real log_amplitude2; // independent amplitude1 of LC 2; probably do not need right now...
+  vector[2] log_amplitude; // independent amplitude1 of LC 1; probably do not need right now...
 
 }
 transformed parameters {
