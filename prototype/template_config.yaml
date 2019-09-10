@@ -3,14 +3,14 @@
 grb:
 
   # Location and distance (degrees and Mpc)
-  ra: 105.
-  dec: 20.
+  ra: 110.
+  dec: -3.
   distance: 500.
 
   # lightcurve
   K: 280. # intensity
-  t_rise: .1 # rise time
-  t_decay: 1.1 # decay time
+  t_rise: .5 # rise time
+  t_decay: 2.1 # decay time
 
 
 # specify the detectors
@@ -28,8 +28,8 @@ detectors:
 
     # Where the detector point in the sky
     pointing:
-      ra: 105.
-      dec: 20.
+      ra: 110.
+      dec: -3.
 
     # the total effective area
     effective_area: 1.
@@ -45,8 +45,8 @@ detectors:
     time: '2010-01-01T00:00:00'
     
     pointing:
-      ra: 105.
-      dec: 20.
+      ra: 110.
+      dec: -3.
 
     effective_area: 1.
 
