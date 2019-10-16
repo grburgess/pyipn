@@ -107,4 +107,4 @@ pyipn/test.ipynb
 .directory
 /examples/template_config.yaml
 
-/pyipn/data/fermi(2018-01-01 00:00:00--2018-01-31 00:00:00)_tle.txt
+/pyipn/data/*_tle.txt*

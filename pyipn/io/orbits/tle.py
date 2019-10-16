@@ -3,6 +3,8 @@ from pathlib import Path
 from sgp4.earth_gravity import wgs72
 from sgp4.io import twoline2rv
 
+from pyorbital.orbital import Orbital
+
 '''
 Send query request to space-track.org for a specified timerange (drange) 
 and satellite id and write the corresponding two-line-elements into a data file.
@@ -10,13 +12,13 @@ and satellite id and write the corresponding two-line-elements into a data file.
 
 def write_tle(st, sat_id, drange, name):
 	lines = st.tle(iter_lines=True, norad_cat_id=sat_id, epoch=drange, format='tle')
-	data_path = Path().resolve().parent.parent.as_posix() +'/data/'+'fermi('+drange+')_tle.txt'
+	data_path = Path().resolve().parent.parent.as_posix() +'/data/'+name+'('+drange+')_tle.txt'
 
 	with open(data_path,'w') as fp:
 		for line in lines:
 			fp.write(line + "\n")
 
-	return(Path().resolve().parent.parent.as_posix() +'/data/'+'fermi('+drange+')_tle.txt')
+	return(Path().resolve().parent.parent.as_posix() +'/data/'+name+'('+drange+')_tle.txt')
 
 
 def convert_to_decimal_days(dt):
@@ -45,9 +47,12 @@ def find_closest_epoch(dt, tle_path):
 	return(line1, line2)
 
 '''
-return position of satellite at time dt based on TLE file
+return position of satellite at time dt based on TLE file;
+(apparently does inlcude deep space corrections;
+https://github.com/skyfielders/python-skyfield/issues/142)
+position in kilometers from the center of the earth (GCRS)
 '''
-def position(dt, tle_path):
+def position_skyfield(dt, tle_path):
 	line1, line2 = find_closest_epoch(dt, tle_path)
 
 	satellite = twoline2rv(line1, line2, wgs72)
@@ -55,3 +60,15 @@ def position(dt, tle_path):
 
 	return position
 
+'''
+return position of satellite at time dt based on TLE file;
+(no deep space)
+position in kilometers from the center of the earth (GCRS)
+'''
+def position_pyorbital(dt, tle_path, name):
+	line1, line2 = find_closest_epoch(dt, tle_path)
+
+	satellite = Orbital(name, line1=line1, line2=line2)
+	position, velocity = satellite.get_position(dt)
+
+	return position
