@@ -70,6 +70,8 @@ REQUIRED = [
     "numba",
     "reproject",
     "pyyaml",
+    "sgp4",
+    "pyorbital",
 ]
 
 
