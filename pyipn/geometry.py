@@ -1,5 +1,5 @@
 import astropy.units as u
-from astropy.coordinates import SkyCoord, CartesianRepresentation
+from astropy.coordinates import SkyCoord, CartesianRepresentation, SphericalRepresentation
 import numpy as np
 
 
@@ -34,12 +34,24 @@ class Pointing(object):
 
         return self._skycoord.separation(grb.location.coord).rad
 
-    
-#why pointing and location class different
+
 class Location(object):
     def __init__(self, sky_coord):
 
         self._skycoord = sky_coord
+
+    @classmethod
+    def from_GCRS(cls, GCRS_coord):
+        skycoord_GCRS = SkyCoord(
+                x=GCRS_coord[0],
+                y=GCRS_coord[1],
+                z=GCRS_coord[2],
+                representation_type="cartesian",
+                unit="km",
+                frame='gcrs'            
+            )
+
+        return cls(skycoord_GCRS.transform_to('icrs'))
 
     def get_light_travel_time(self, other_location):
 

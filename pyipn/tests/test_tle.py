@@ -1,4 +1,5 @@
 from pyipn.io.orbits.tle import position_pyorbital, position_skyfield
+from pyipn.geometry import Location
 
 from pathlib import Path
 import datetime as dt
@@ -16,3 +17,7 @@ def test_position_skyfield():
 
 	pos_G = position_skyfield(date, tle_path_G)
 	pos_I = position_skyfield(date, tle_path_I)
+	loc_G = Location.from_GCRS(pos_G)
+	loc_I = Location.from_GCRS(pos_I)
+
+
