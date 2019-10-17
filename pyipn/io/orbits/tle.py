@@ -12,13 +12,13 @@ and satellite id and write the corresponding two-line-elements into a data file.
 
 def write_tle(st, sat_id, drange, name):
 	lines = st.tle(iter_lines=True, norad_cat_id=sat_id, epoch=drange, format='tle')
-	data_path = Path().resolve().parent.parent.as_posix() +'/data/'+name+'('+drange+')_tle.txt'
+	data_path = Path(__file__).resolve().parent.parent.parent.as_posix() +'/data/'+name+drange+'_tle.txt'
 
 	with open(data_path,'w') as fp:
 		for line in lines:
 			fp.write(line + "\n")
 
-	return(Path().resolve().parent.parent.as_posix() +'/data/'+name+'('+drange+')_tle.txt')
+	return(Path(__file__).resolve().parent.parent.parent.as_posix() +'/data/'+name+drange+'_tle.txt')
 
 
 def convert_to_decimal_days(dt):
@@ -63,7 +63,7 @@ def position_skyfield(dt, tle_path):
 '''
 return position of satellite at time dt based on TLE file;
 (no deep space)
-position in kilometers from the center of the earth (GCRS)
+position from the center of the earth (GCRS) (I believe in earth radii = 6378.135km)
 '''
 def position_pyorbital(dt, tle_path, name):
 	line1, line2 = find_closest_epoch(dt, tle_path)
