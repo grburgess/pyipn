@@ -110,6 +110,7 @@ parameters {
 
 }
 transformed parameters {
+
   vector[N1] fhat1; // raw GP for LC 1
   vector[N2] fhat2; // raw GP for LC 2
   vector[2] bkg = exp(log_bkg);
@@ -133,7 +134,7 @@ transformed parameters {
 
       // do not multiply a matrix by a constant
     matrix [N1, k] features_one1 = bw * time_omega1;
-    matrix [N1, k] features_two1 = 0.5 * features_one1;
+    matrix [N1, k] features_two1 = 0.25 * features_one1;
 
     matrix[N1,k] tmp[2] = cos_sin_features_nonstationary(N1, k, features_one1, features_two1);
   
