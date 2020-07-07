@@ -38,8 +38,15 @@ def source_poisson_generator(tstart, tstop, K, p_start, t_rise, t_decay):
 
         time = tstart
 
-        arrival_times = [tstart]
+        if tstart >= p_start:
+        
+            arrival_times = [tstart]
 
+        else:
+
+            arrival_times = []
+
+            
         while time < tstop:
 
             time = time - (1.0 / fmax) * np.log(np.random.rand())

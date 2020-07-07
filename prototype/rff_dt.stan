@@ -100,8 +100,10 @@ parameters {
 
 
 
-  unit_vector[3] grb_xyz;
+  //  unit_vector[3] grb_xyz;
 
+  real<lower=-1, upper=1.> dt;
+  
   real log_scale;
   real log_bw;
   
@@ -127,7 +129,7 @@ transformed parameters {
   //  real tstop = tstart + duration;
 
   
-  real dt = time_delay(grb_xyz, sc_pos1, sc_pos2);
+  //  real dt = time_delay(grb_xyz, sc_pos1, sc_pos2);
 
 
   {
@@ -194,8 +196,8 @@ model {
 
 generated quantities {
 
-  real grb_phi = atan2(grb_xyz[2], grb_xyz[1]);
-  real grb_theta = -( acos(grb_xyz[3]) - 0.5*pi());
+  /* real grb_phi = atan2(grb_xyz[2], grb_xyz[1]); */
+  /* real grb_theta = -( acos(grb_xyz[3]) - 0.5*pi()); */
 
   
   /* int ppc1[N1]; */
