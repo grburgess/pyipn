@@ -106,3 +106,6 @@ include/
 pyipn/test.ipynb
 .directory
 /examples/template_config.yaml
+/prototype/*.hpp
+/prototype/*.o
+/prototype/*.d
