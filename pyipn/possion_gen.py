@@ -1,6 +1,6 @@
 import numpy as np
 from numba import jit, njit
-
+from pyipn.numba_array import VectorFloat64
 
 @njit
 def norris(x, K, t_start, t_rise, t_decay):
@@ -14,7 +14,7 @@ def norris(x, K, t_start, t_rise, t_decay):
         return 0.0
 
 
-@jit
+@njit
 def source_poisson_generator(tstart, tstop, K, p_start, t_rise, t_decay):
     """
     Non-homogeneous poisson process generator
@@ -38,14 +38,11 @@ def source_poisson_generator(tstart, tstop, K, p_start, t_rise, t_decay):
 
         time = tstart
 
+        arrival_times = VectorFloat64(0)
+        
         if tstart >= p_start:
         
-            arrival_times = [tstart]
-
-        else:
-
-            arrival_times = []
-
+            arrival_times.append(tstart)
             
         while time < tstop:
 
@@ -57,10 +54,10 @@ def source_poisson_generator(tstart, tstop, K, p_start, t_rise, t_decay):
             if test <= p_test:
                 arrival_times.append(time)
 
-        return np.array(arrival_times)
+        return arrival_times.arr
 
 
-@jit
+@njit
 def background_poisson_generator(tstart, tstop, slope, intercept):
     """
     Non-homogeneous poisson process generator
@@ -78,8 +75,8 @@ def background_poisson_generator(tstart, tstop, slope, intercept):
     fmax = tmp.max()
 
     time = tstart
-
-    arrival_times = [tstart]
+    arrival_times = VectorFloat64(0)
+    arrival_times.append(tstart)
 
     while time < tstop:
 
@@ -91,4 +88,4 @@ def background_poisson_generator(tstart, tstop, slope, intercept):
         if test <= p_test:
             arrival_times.append(time)
 
-    return np.array(arrival_times)
+    return arrival_times.arr

@@ -1,90 +1,5 @@
 functions {
-
-  matrix[] cos_sin_features_nonstationary(int N, int k, matrix features_one, matrix features_two) {
-    /*
-      random fourier features based off of
-      https://bitbucket.org/flaxter/random-fourier-features-in-stan/src/master/
-    */
-
-    // store as an array of matrices so that I can return
-    // both at the same time
-    matrix[N,k] cos_sin_features[2];
-
-
-
-
-    cos_sin_features[1,:,:] = (cos(features_one)+cos(features_two));
-    cos_sin_features[2,:,:] = (sin(features_one)+sin(features_two));
-    return cos_sin_features;
-
-  }
-
-
-
-  matrix[] cos_sin_features(int N, int k, vector time, vector omega, real bw) {
-    /*
-      random fourier features based off of
-      https://bitbucket.org/flaxter/random-fourier-features-in-stan/src/master/
-
-    */
-
-    // store as an array of matrices so that I can return
-    // both at the same time
-    matrix[N,k] cos_sin_features[2];
-    real scale;
-    matrix[N,k] features;
-
-    features = time * omega' * bw;
-
-    scale = sqrt(2.0/k);
-    cos_sin_features[1,:,:] = cos(features) * scale;
-    cos_sin_features[2,:,:] = sin(features) * scale;
-    return cos_sin_features;
-
-  }
-
-  /* vector filter(vector time, real tstart, real tstop,  real strength) { */
-  /*   /\* */
-
-  /*     A two-sided filter that forces the light curve prediction to zero */
-  /*     outside of a start and stop time. This may not be needed in the future */
-  /*   *\/ */
-  /*   return inv_logit(strength * (time - tstart) ) .* (1 - inv_logit(strength * (time- tstop) )); */
-
-  /* } */
-
-
-
-  vector filter(vector time, real tstart, real tstop,  real strength) {
-    /*
-
-      A two-sided filter that forces the light curve prediction to zero
-      outside of a start and stop time. This may not be needed in the future
-    */
-    return 0.25 * (1+tanh(strength * (time - tstart) )) .* (1 - tanh(strength * (time- tstop) ));
-
-  }
-
-
-
-
-  real time_delay( vector grb_xyz, vector sc_pos1, vector sc_pos2) {
-
-
-    real c = 299792.46; // km/s
-
-    real t1 = dot_product(grb_xyz, sc_pos1);
-    real t2 = dot_product(grb_xyz, sc_pos2);
-
-
-    return (t1 - t2)/c;
-
-
-
-
-
-  }
-
+#include functions.stan
 }
 
 data {
@@ -117,9 +32,12 @@ data {
 }
 transformed data {
 
+  real bw = 1.;
+  
   matrix [N1, k] time_omega1;
-  vector[k] omega; // this weird MC integration thing. I suppose I could do this in stan
-
+  matrix [N1, k] time_omega2;
+  vector[k] omega1; // this weird MC integration thing. I suppose I could do this in stan
+  vector[k] omega2; // this weird MC integration thing. I suppose I could do this in stan
 
 
   //  real dt = 29.64;
@@ -132,13 +50,14 @@ transformed data {
 
   for (i in 1:k) {
 
-    omega[i] = normal_rng(0, 1);
-
+    omega1[i] = normal_rng(0, 1);
+    omega2[i] = normal_rng(0, 1);
   }
 
-  time_omega1 = time1 * omega';
+  time_omega1 = time1 * omega1';
+  time_omega2 = time1 * omega2';
 
-
+  
 }
 parameters {
 
@@ -150,8 +69,7 @@ parameters {
 
   real log_scale;
 
-  real log_bw;
-
+ 
 
   unit_vector[3] grb_xyz;
 
@@ -166,7 +84,7 @@ transformed parameters {
   vector[3] bkg = exp(log_bkg);
 
 
-  real bw = exp(log_bw);
+  //  real bw = exp(log_bw);
   vector[N1] expected_count1;
   vector[N2] expected_count2;
   vector[N3] expected_count3;
@@ -180,9 +98,9 @@ transformed parameters {
 
   {
 
-    // do not multiply a matrix by a constant
+      // do not multiply a matrix by a constant
     matrix [N1, k] features_one1 = bw * time_omega1;
-    matrix [N1, k] features_two1 = 0.5 * features_one1;
+    matrix [N1, k] features_two1 = bw * time_omega2;
 
     matrix[N1,k] tmp[2] = cos_sin_features_nonstationary(N1, k, features_one1, features_two1);
 
@@ -196,8 +114,9 @@ transformed parameters {
   // have to compute the matrices on the fly for the delayed LC
   {
 
-    matrix [N2, k] features_one2 = (bw * (time2 - dt_1_2)) * omega';
-    matrix [N2, k] features_two2 = 0.5 * features_one2;
+    matrix [N2, k] features_one2 = (bw * (time2 - dt_1_2)) * omega1';
+    matrix [N2, k] features_two2 = (bw * (time2 - dt_1_2)) * omega2';
+    
 
 
     matrix[N2,k] tmp[2] = cos_sin_features_nonstationary(N2, k, features_one2, features_two2);
@@ -211,10 +130,9 @@ transformed parameters {
   // have to compute the matrices on the fly for the delayed LC
   {
 
-    matrix [N3, k] features_one3 = (bw * (time3 - dt_1_3)) * omega';
-    matrix [N3, k] features_two3 = 0.5 * features_one3;
-
-
+    matrix [N3, k] features_one3 = (bw * (time3 - dt_1_3)) * omega1';
+    matrix [N3, k] features_two3 = (bw * (time3 - dt_1_3)) * omega2';
+    
     matrix[N3,k] tmp[2] = cos_sin_features_nonstationary(N3, k, features_one3, features_two3);
 
     fhat3 = filter(time3 - dt_1_3, tstart, tstop ,  strength) .* exp( scale * (tmp[1,:,:] * beta1 + tmp[2,:,:] * beta2) + log_amplitude[2] );
@@ -244,7 +162,7 @@ model {
 
   log_bkg ~ normal(log(50), 1);
 
-  log_bw ~ std_normal();
+  // log_bw ~ std_normal();
 
   log_amplitude ~ std_normal();
 

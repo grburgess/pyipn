@@ -1,34 +1,5 @@
 functions {
-
-  matrix[] cos_sin_features(int N, int k, vector time, vector omega, real bw) {
-    matrix[N,k] cos_sin_features[2];
-    real scale;
-    matrix[N,k] features;
-  
-    features = time * omega' * bw;
-  
-    scale = sqrt(2.0/k);
-    for(i in 1:N)
-      for(j in 1:k) {
-	cos_sin_features[1, i,j] = cos(features[i,j]);
-	cos_sin_features[2, i,j] = sin(features[i,j]);
-      }
-    cos_sin_features[1,:,:] = cos_sin_features[1,:,:] * scale;
-    cos_sin_features[2,:,:] = cos_sin_features[2,:,:] * scale;
-    return cos_sin_features;
-
-
-
-
-  }
-
-  vector filter(vector time, real tstart, real tstop,  real strength) {
-  
-    return inv_logit(strength * (time - tstart) ) .* (1 - inv_logit(strength * (time- tstop) ));
-  
-}
-  
-
+#include functions.stan
 
 }
 
@@ -40,7 +11,8 @@ data {
   vector[N2] time2;
   int counts1[N1];
   int counts2[N2];
-
+  vector[N1] exposure1; // exposure of LC 1
+  vector[N2] exposure2; // exposure of LC 2
   real bw;
   int<lower=1> k;
   
@@ -91,11 +63,13 @@ parameters {
   vector[k] beta1;
   vector[k] beta2;
 
-  real<lower=0> bkg1;
-  real<lower=0> bkg2;
+  vector[2]  log_bkg;
 
-  real<lower=0> dt;
+  real log_scale;
+  
+  unit_vector[3] grb_xyz;
 
+  vector[2] log_amplitude;
   
 }
 transformed parameters {
