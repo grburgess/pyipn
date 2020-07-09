@@ -8,6 +8,8 @@ import astropy.constants as constants
 from astropy.coordinates import SkyCoord, UnitSphericalRepresentation
 from mpltools import color as mpl_color
 import matplotlib.pyplot as plt
+import ipyvolume as ipv
+
 
 from .effective_area import EffectiveArea
 from .geometry import Pointing, DetectorLocation, Location
@@ -16,7 +18,7 @@ from .grb import GRB
 from .detector import Detector
 
 from .io.plotting.projection import *
-from .io.plotting.spherical_circle import SphericalCircle
+from .io.plotting.spherical_circle import SphericalCircle, get_3d_circle
 
 
 class Universe(object):
@@ -32,12 +34,12 @@ class Universe(object):
         self._detectors = collections.OrderedDict()
         self._grb = grb
 
+        self._grb_radius = 1e6
+
         self._time_differences = (
-            None
-        )  # array of time differences ordered like _detectors
-        self._T0 = (
-            None
-        )  # array of times at which detectors get hit by GRB ordered like _detectors
+            None  # array of time differences ordered like _detectors
+        )
+        self._T0 = None  # array of times at which detectors get hit by GRB ordered like _detectors
         self._light_curves = None
         self._n_detectors = 0
 
@@ -245,10 +247,82 @@ class Universe(object):
         ax=None,
         radius=None,
         center=None,
+        threeD=True,
         **kwargs
     ):
 
-        if ax is None:
+        if not threeD:
+            if ax is None:
+
+                assert projection in [
+                    "astro degrees aitoff",
+                    "astro degrees mollweide",
+                    "astro hours aitoff",
+                    "astro hours mollweide",
+                    "astro globe",
+                    "astro zoom",
+                ]
+
+                skw_dict = dict(projection=projection)
+
+                if projection in ["astro globe", "astro zoom"]:
+
+                    assert center is not None, "you must specify a center"
+
+                    skw_dict = dict(projection=projection, center=center)
+
+                if projection == "astro zoom":
+
+                    assert radius is not None, "you must specify a radius"
+
+                    skw_dict = dict(projection=projection, center=center, radius=radius)
+
+                fig, ax = plt.subplots(subplot_kw=skw_dict)
+
+            else:
+
+                fig = ax.get_figure()
+
+        # compute the annulus for this set of detectors
+        cart_vec, spherical_vec, theta = self.calculate_annulus(detector1, detector2)
+
+        if not threeD:
+            circle = SphericalCircle(
+                spherical_vec,
+                theta,
+                vertex_unit=u.deg,
+                resolution=5000,
+                #            edgecolor=color,
+                facecolor="none",
+                transform=ax.get_transform("icrs"),
+                **kwargs,
+            )
+
+            ax.add_patch(circle)
+
+            return fig
+
+        else:
+
+            # get all the threeD point
+
+            xyz = get_3d_circle(
+                spherical_vec, theta, radius=self._grb_radius, resolution=1000
+            )
+
+            ipv.plot(xyz[:, 0], xyz[:, 1], xyz[:, 2], **kwargs)
+
+    def plot_all_annuli(
+        self,
+        projection="astro degrees mollweide",
+        radius=None,
+        center=None,
+        cmap="Set1",
+        threeD=True,
+        **kwargs
+    ):
+
+        if not threeD:
 
             assert projection in [
                 "astro degrees aitoff",
@@ -277,65 +351,15 @@ class Universe(object):
 
         else:
 
-            fig = ax.get_figure()
+            fig = ipv.figure()
+            ipv.pylab.style.box_off()
+            ipv.pylab.style.axes_off()
+            ax = None
 
-        # compute the annulus for this set of detectors
-        cart_vec, spherical_vec, theta = self.calculate_annulus(detector1, detector2)
-
-        circle = SphericalCircle(
-            spherical_vec,
-            theta,
-            vertex_unit=u.deg,
-            resolution=5000,
-            #            edgecolor=color,
-            facecolor="none",
-            transform=ax.get_transform("icrs"),
-            **kwargs
-        )
-
-        ax.add_patch(circle)
-
-        return fig
-
-    def plot_all_annuli(
-        self,
-        projection="astro degrees mollweide",
-        radius=None,
-        center=None,
-        cmap="Set1",
-        **kwargs
-    ):
-
-        assert projection in [
-            "astro degrees aitoff",
-            "astro degrees mollweide",
-            "astro hours aitoff",
-            "astro hours mollweide",
-            "astro globe",
-            "astro zoom",
-        ]
-
-        skw_dict = dict(projection=projection)
-
-        if projection in ["astro globe", "astro zoom"]:
-
-            assert center is not None, "you must specify a center"
-
-            skw_dict = dict(projection=projection, center=center)
-
-        if projection == "astro zoom":
-
-            assert radius is not None, "you must specify a radius"
-
-            skw_dict = dict(projection=projection, center=center, radius=radius)
-
-        fig, ax = plt.subplots(subplot_kw=skw_dict)
-
-        
         # get the colors to use
 
-        n_verts = self._n_detectors * (self._n_detectors - 1)/2
-        
+        n_verts = self._n_detectors * (self._n_detectors - 1) / 2
+
         colors = mpl_color.colors_from_cmap(int(n_verts), cmap=cmap)
 
         for i, (d1, d2) in enumerate(combinations(self._detectors.keys(), 2)):
@@ -348,8 +372,36 @@ class Universe(object):
                 radius=radius,
                 ax=ax,
                 edgecolor=colors[i],
-                **kwargs
+                threeD=threeD,
+                color=colors[i],
+                **kwargs,
             )
+
+            if threeD:
+
+                loc1 = self._detectors[d1].location.get_cartesian_coord().xyz.value
+                loc2 = self._detectors[d2].location.get_cartesian_coord().xyz.value
+
+                ipv.plot(
+                    np.array([loc1[0], loc2[0]]),
+                    np.array([loc1[1], loc2[1]]),
+                    np.array([loc1[2], loc2[2]]),
+                    color=colors[i],
+                )
+
+        if threeD:
+
+            ipv.scatter(
+                *(
+                    self._grb_radius
+                    * self._grb.location.get_cartesian_coord().xyz.value
+                    / np.linalg.norm(self._grb.location.get_cartesian_coord().xyz.value)
+                )[np.newaxis].T,
+                marker="sphere",
+                color="green",
+            )
+
+            ipv.show()
 
         return fig
 

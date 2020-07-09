@@ -4,9 +4,10 @@ from matplotlib.patches import PathPatch
 from matplotlib.path import Path
 import astropy.units as u
 
+
 class SphericalCircle(PathPatch):
-	#created from the astropy.visualization.wcsaxes.patches.SphericalCircle class
-	#changed to path from polygon to create disjointed parts
+    # created from the astropy.visualization.wcsaxes.patches.SphericalCircle class
+    # changed to path from polygon to create disjointed parts
     """
     Create a patch representing a spherical circle - that is, a circle that is
     formed of all the points that are within a certain angle of the central
@@ -48,8 +49,8 @@ class SphericalCircle(PathPatch):
         # if longitude.to_value(u.deg) > 180. :
         # 	longitude = -360. * u.deg + longitude.to(u.deg)
 
-		# Start off by generating the circle around the North pole
-        lon = np.linspace(0., 2 * np.pi, resolution + 1)[:-1] * u.radian
+        # Start off by generating the circle around the North pole
+        lon = np.linspace(0.0, 2 * np.pi, resolution + 1)[:-1] * u.radian
         lat = np.repeat(0.5 * np.pi - radius.to_value(u.radian), resolution) * u.radian
 
         lon, lat = _rotate_polygon(lon, lat, longitude, latitude)
@@ -59,17 +60,50 @@ class SphericalCircle(PathPatch):
         lat = lat.to_value(vertex_unit)
         # Create polygon vertices
         vertices = np.array([lon, lat]).transpose()
-        
-        #split path into two sections if circle crosses -180, 180 bounds
+
+        # split path into two sections if circle crosses -180, 180 bounds
         codes = []
-        last = (4000.4 * u.degree).to_value(vertex_unit) #400.4 is a random number large enough so first element is "MOVETO"
+        last = (4000.4 * u.degree).to_value(
+            vertex_unit
+        )  # 400.4 is a random number large enough so first element is "MOVETO"
         for v in vertices:
-        	if np.absolute(v[0] - last) > (300 * u.degree).to_value(vertex_unit) :
-        		codes.append(Path.MOVETO)
-        	else:
-        		codes.append(Path.LINETO)
-        	last = v[0]
+            if np.absolute(v[0] - last) > (300 * u.degree).to_value(vertex_unit):
+                codes.append(Path.MOVETO)
+            else:
+                codes.append(Path.LINETO)
+            last = v[0]
 
         circle_path = Path(vertices, codes)
 
         super().__init__(circle_path, **kwargs)
+
+
+def compute_xyz(ra, dec, radius=100):
+
+    out = np.zeros((len(ra), 3))
+
+    for i, (r, d) in enumerate(zip(ra, dec)):
+
+        out[i, 0] = np.cos(d) * np.cos(r)
+        out[i, 1] = np.cos(d) * np.sin(r)
+        out[i, 2] = np.sin(d)
+
+    return radius * out
+
+
+def get_3d_circle(center, theta, radius, resolution=100):
+
+    longitude, latitude = center
+
+    # #longitude values restricted on domain of (-180,180]
+    # if longitude.to_value(u.deg) > 180. :
+    # 	longitude = -360. * u.deg + longitude.to(u.deg)
+
+    # Start off by generating the circle around the North pole
+    lon = np.linspace(0.0, 2 * np.pi, resolution + 1)[:-1] * u.radian
+    # lat = np.repeat(0.5 * np.pi - radius.to_value(u.radian), resolution) * u.radian
+    lat = np.repeat(0.5 * np.pi - theta.to_value(u.radian), resolution) * u.radian
+
+    lon, lat = _rotate_polygon(lon, lat, longitude, latitude)
+
+    return compute_xyz(lon, lat, radius)
