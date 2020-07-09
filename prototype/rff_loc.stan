@@ -101,7 +101,7 @@ transformed parameters {
     matrix[N1,k] tmp[2] = cos_sin_features_nonstationary(N1, k, features_one1, features_two1);
   
       // mulitply by the filter... maybe remove
-    fhat1 = window1 .* exp( scale * (tmp[1,:,:] * beta1 + tmp[2,:, :] * beta2) + log_amplitude[1]);
+    fhat1 = exp( scale * (tmp[1,:,:] * beta1 + tmp[2,:, :] * beta2) + log_amplitude[1]);
     // fhat1 = exp( scale * (tmp[1,:,:] * beta1 + tmp[2,:, :] * beta2) + log_amplitude[1]);
     
 
@@ -117,7 +117,8 @@ transformed parameters {
 
     matrix[N2,k] tmp[2] = cos_sin_features_nonstationary(N2, k, features_one2, features_two2);
 
-    fhat2 = filter(time2 - dt, tstart, tstop ,  strength) .* exp( scale * (tmp[1,:,:] * beta1 + tmp[2,:,:] * beta2) + log_amplitude[2] );
+    //fhat2 = filter(time2 - dt, tstart, tstop ,  strength) .* exp( scale * (tmp[1,:,:] * beta1 + tmp[2,:,:] * beta2) + log_amplitude[2] );
+    fhat2 =  exp( scale * (tmp[1,:,:] * beta1 + tmp[2,:,:] * beta2) + log_amplitude[2] );
     //fhat2 = exp( scale * (tmp[1,:,:] * beta1 + tmp[2,:,:] * beta2) + log_amplitude[2] );
     
 
