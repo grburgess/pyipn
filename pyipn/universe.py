@@ -98,7 +98,7 @@ class Universe(object):
             # calculate closest distance to wavefront when the GRB reaches the detector
             # (negative sign for right order)
             ltd.append(
-                -norm_grb_vec.dot(detector.location.get_cartesian_coord().xyz).value
+                -norm_grb_vec.dot(detector.location.get_cartesian_coord().xyz).to("km").value
             )
 
         # rank the distances in ascending order
@@ -116,7 +116,7 @@ class Universe(object):
         for i in range(len(ltd) - 1):
 
             dt = (
-                ((ltd[i + 1] - ltd[i]) * u.km / constants.c).decompose().value
+                ((ltd[i + 1] - ltd[i]) * u.km / constants.c).decompose().to("s").value
             )  # time in seconds
             assert (
                 dt >= 0
@@ -219,6 +219,7 @@ class Universe(object):
                 z=dxyz[2],
                 representation_type="cartesian",
                 unit="km",
+                frame="icrs",
             )
         )
 
@@ -227,14 +228,19 @@ class Universe(object):
         dec = dcart.coord.represent_as(UnitSphericalRepresentation).lat
 
         # calculate angle theta between center point d and annulus
-        distance = np.linalg.norm(dxyz) * u.km
+        distance = np.linalg.norm(dxyz)
         dt = (
             self._T0[list(self._detectors.keys()).index(detector1)]
             - self._T0[list(self._detectors.keys()).index(detector2)]
         ) * u.s
         # rounding to 15th decimal because small numerical errors cause issues with numbers slightly over 1
+
+                
+        arg = (constants.c * dt / distance)
+
+
         theta = np.arccos(
-            np.around((constants.c * dt / distance).decompose().value, 15)
+            np.around(arg.decompose().to(u.dimensionless_unscaled).value, 15)
         )
 
         return (norm_d, np.array([ra.value, dec.value]) * ra.unit, theta * u.rad)

@@ -34,8 +34,8 @@ class Pointing(object):
 
         return self._skycoord.separation(grb.location.coord).rad
 
-    
-#why pointing and location class different
+
+# why pointing and location class different
 class Location(object):
     def __init__(self, sky_coord):
 
@@ -49,14 +49,16 @@ class Location(object):
     def coord(self):
 
         return self._skycoord
-    
+
     def get_cartesian_coord(self):
         return self._skycoord.represent_as(CartesianRepresentation)
 
     def get_norm_vec(self, unit):
-        assert isinstance(unit, u.Unit), "no (astropy) unit provided to get_morm_vec function!"
+        assert isinstance(
+            unit, u.Unit
+        ), "no (astropy) unit provided to get_morm_vec function!"
         vec = self.get_cartesian_coord().xyz.to(unit)
-        norm_vec = vec/np.linalg.norm(vec)
+        norm_vec = vec / np.linalg.norm(vec)
         return norm_vec
 
 
