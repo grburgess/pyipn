@@ -198,7 +198,7 @@ class Universe(object):
             return universe
 
     def calculate_annulus(self, detector1, detector2):
-        """FIXME! briefly describe function
+       """FIXME! briefly describe function
 
         :param detector1: 
         :param detector2: 
@@ -299,7 +299,7 @@ class Universe(object):
                 vertex_unit=u.deg,
                 resolution=5000,
                 #            edgecolor=color,
-                facecolor="none",
+                fc="none",
                 transform=ax.get_transform("icrs"),
                 **kwargs,
             )
