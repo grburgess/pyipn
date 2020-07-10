@@ -98,7 +98,9 @@ class Universe(object):
             # calculate closest distance to wavefront when the GRB reaches the detector
             # (negative sign for right order)
             ltd.append(
-                -norm_grb_vec.dot(detector.location.get_cartesian_coord().xyz).to("km").value
+                -norm_grb_vec.dot(detector.location.get_cartesian_coord().xyz)
+                .to("km")
+                .value
             )
 
         # rank the distances in ascending order
@@ -235,9 +237,7 @@ class Universe(object):
         ) * u.s
         # rounding to 15th decimal because small numerical errors cause issues with numbers slightly over 1
 
-                
-        arg = (constants.c * dt / distance)
-
+        arg = constants.c * dt / distance
 
         theta = np.arccos(
             np.around(arg.decompose().to(u.dimensionless_unscaled).value, 15)
