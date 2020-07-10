@@ -29,7 +29,7 @@ data {
 }
 transformed data {
 
-  real bw = 1.;
+  //  real bw = 1.;
   
 
   row_vector[k] omega1; // this weird MC integration thing. I suppose I could do this in stan
@@ -53,6 +53,8 @@ parameters {
   unit_vector[3] grb_xyz;
 
   real log_scale;
+
+  real log_bw;
   
   vector[2]  log_bkg;    
   vector[2] log_amplitude; // independent amplitude1 of LC 1; probably do not need right now...
@@ -64,6 +66,8 @@ transformed parameters {
   vector[2] amplitude = exp(log_amplitude);
   
   real scale = exp(log_scale) * inv_sqrt(k);
+
+  real bw = exp(log_bw);
 
   
   real dt = time_delay(grb_xyz, sc_pos1, sc_pos2);
@@ -84,11 +88,12 @@ model {
   log_amplitude ~ std_normal();
   log_bkg ~ normal(log(50), 1);  
 
+  log_bw ~ std_normal();
   
 
-  target += reduce_sum(partial_log_like, counts1, grainsize, time1, exposure1, omega1, omega2, beta1, beta2, 0., bkg[1], scale, amplitude[1]);
+  target += reduce_sum(partial_log_like, counts1, grainsize, time1, exposure1, omega1, omega2, beta1, beta2, bw, 0., bkg[1], scale, amplitude[1]);
 
-  target += reduce_sum(partial_log_like, counts2, grainsize, time2, exposure2, omega1, omega2, beta1, beta2, dt, bkg[2], scale, amplitude[2]);
+  target += reduce_sum(partial_log_like, counts2, grainsize, time2, exposure2, omega1, omega2, beta1, beta2, bw, dt, bkg[2], scale, amplitude[2]);
 
 }
 
