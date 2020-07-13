@@ -68,8 +68,6 @@ transformed parameters {
   }
 
 
-
-
 }
 
 model {
@@ -107,8 +105,6 @@ model {
 			 time[n,:N_time_bins[n]], exposure[n,:N_time_bins[n]],
 			 omega1, omega2, beta1, beta2, bw,
 			 dt[n-1], bkg[n], scale, amplitude[n]);
-
-
 
   }
 

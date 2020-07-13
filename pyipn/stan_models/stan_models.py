@@ -1,6 +1,7 @@
 import cmdstanpy
 import arviz
-
+import ipyvolume as ipv
+import numpy as np
 
 _available_models = ["rff_ipn.stan", "rff_omega_ipn.stan"]
 
@@ -15,9 +16,23 @@ def get_stan_model(stan_model):
         stan_file=stan_model, cpp_options={"STAN_THREADS": "TRUE"}
     )
 
-
     return model
 
 
+def plot_stan_fit(fit, universe, cmap="Set1", color="blue"):
 
+    ar = arviz.from_cmdstanpy(fit)
 
+    raw_xyz = np.array(ar.posterior.grb_xyz).reshape(-1, ar.posterior.grb_xyz.shape[-1])
+
+    rad = universe.grb_radius
+
+    scatter = rad + np.random.normal(0, rad * 0.05, size=len(raw_xyz))
+
+    universe.plot_all_annuli(cmap=cmap, lw=3, threeD=True)
+
+    xyz = scatter * raw_xyz
+
+    ipv.scatter(
+        xyz[:, 0], xyz[:, 1], xyz[:, 2], marker="sphere", color=color, size=0.7
+    )
