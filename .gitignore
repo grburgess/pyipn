@@ -109,3 +109,9 @@ pyipn/test.ipynb
 /prototype/*.hpp
 /prototype/*.o
 /prototype/*.d
+/.DS_Store
+/.dir-locals.el
+/prototype/.Rhistory
+/prototype/PoissonApproxTest.r
+/prototype/data.r
+/prototype/demo.ipynb
