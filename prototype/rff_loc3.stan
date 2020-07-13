@@ -57,6 +57,7 @@ parameters {
   vector[3]  log_bkg;
 
 
+  //  real log_bw;
   real log_scale;
 
  
@@ -70,7 +71,8 @@ transformed parameters {
  
   vector[3] bkg = exp(log_bkg);
   vector[3] amplitude = exp(log_amplitude);
- 
+
+  //  real bw = exp(log_bw);
   real scale = exp(log_scale) * inv_sqrt(k);
 
 
@@ -93,7 +95,7 @@ model {
 
   log_bkg ~ normal(log(50), 1);
 
-  // log_bw ~ std_normal();
+  //  log_bw ~ normal(-1, 2);
 
   log_amplitude ~ std_normal();
 
@@ -103,11 +105,11 @@ model {
   //tstart ~ normal(1,5);
 
 
-  target += reduce_sum(partial_log_like, counts1, grainsize, time1, exposure1, omega1, omega2, beta1, beta2, 0., bkg[1], scale, amplitude[1]);
+  target += reduce_sum(partial_log_like, counts1, grainsize, time1, exposure1, omega1, omega2, beta1, beta2, bw, 0., bkg[1], scale, amplitude[1]);
   
-  target += reduce_sum(partial_log_like, counts2, grainsize, time2, exposure2, omega1, omega2, beta1, beta2, dt_1_2, bkg[2], scale, amplitude[2]);
+  target += reduce_sum(partial_log_like, counts2, grainsize, time2, exposure2, omega1, omega2, beta1, beta2, bw, dt_1_2, bkg[2], scale, amplitude[2]);
   
-  target += reduce_sum(partial_log_like, counts3, grainsize, time3, exposure3, omega1, omega2, beta1, beta2, dt_1_3, bkg[3], scale, amplitude[3]);
+  target += reduce_sum(partial_log_like, counts3, grainsize, time3, exposure3, omega1, omega2, beta1, beta2, bw, dt_1_3, bkg[3], scale, amplitude[3]);
 
   
 

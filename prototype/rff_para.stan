@@ -88,7 +88,7 @@ model {
   log_amplitude ~ std_normal();
   log_bkg ~ normal(log(50), 1);  
 
-  log_bw ~ std_normal();
+  log_bw ~ normal(0, 2);
   
 
   target += reduce_sum(partial_log_like, counts1, grainsize, time1, exposure1, omega1, omega2, beta1, beta2, bw, 0., bkg[1], scale, amplitude[1]);

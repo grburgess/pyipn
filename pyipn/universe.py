@@ -95,7 +95,7 @@ class Universe(object):
 
         for name, detector in self._detectors.items():
 
-            # calculate closest distance to wavefront when the GRB reaches the detector
+            # calculate closest distanistancece to wavefront when the GRB reaches the detector
             # (negative sign for right order)
             ltd.append(
                 -norm_grb_vec.dot(detector.location.get_cartesian_coord().xyz)
@@ -105,12 +105,12 @@ class Universe(object):
 
         # rank the distances in ascending order
 
-        self._distance_rank = np.argsort(ltd)
-        unsort = self._distance_rank.argsort()
+        self._ltd_rank = np.argsort(ltd)
+        unsort = self._ltd_rank.argsort()
 
         # for now compute considering all detectors are static
         # the TOA difference of each detector
-        ltd = np.array(ltd)[self._distance_rank]
+        ltd = np.array(ltd)[self._ltd_rank]
 
         self._time_differences = [0.0]
         self._T0 = [0.0]
@@ -198,7 +198,7 @@ class Universe(object):
             return universe
 
     def calculate_annulus(self, detector1, detector2):
-       """FIXME! briefly describe function
+        """FIXME! briefly describe function
 
         :param detector1: 
         :param detector2: 
