@@ -318,6 +318,72 @@ class Universe(object):
 
             ipv.plot(xyz[:, 0], xyz[:, 1], xyz[:, 2], **kwargs)
 
+    def to_stan_data(self, tstart, tstop, dt=0.2, k=50):
+
+        n_dets = len(self._detectors)
+
+        counts = []
+        times = []
+        exposures = []
+        sc_pos = np.empty((n_dets, 3))
+
+        n_time_bins = []
+
+        for n, (det_nam, v) in enumerate(self._detectors.items()):
+
+            lc = self._light_curves[det_nam]
+            c, t = lc.get_binned_light_curve(tstart, tstop, dt)
+            mid = np.mean([t[:-1], t[1:]], axis=0)
+            e = t[1:] - t[:-1]
+
+            counts.append(c)
+            times.append(mid)
+            exposures.append(e)
+            n_time_bins.append(len(c))
+
+            xyz = v.location.get_cartesian_coord().xyz.value
+            sc_pos[n] = xyz
+
+        max_n_time_bins = max(n_time_bins)
+
+        counts_stan = np.zeros((n_dets, max_n_time_bins), dtype=int)
+        times_stan = np.zeros((n_dets, max_n_time_bins))
+        exposure_stan = np.zeros((n_dets, max_n_time_bins))
+
+        for n in range(n_dets):
+
+            counts_stan[n, : n_time_bins[n]] = counts[n]
+            times_stan[n, : n_time_bins[n]] = times[n]
+            exposure_stan[n, : n_time_bins[n]] = exposures[n]
+
+        #     data = dict(N_detectors=n_dets,
+        #                 N_time_bins = n_time_bins[::-1],
+        #                 max_N_time_bins = max_n_time_bins,
+        #                 counts = counts_stan[::-1,:],
+        #                 time = times_stan[::-1,:],
+        #                 exposure = exposure_stan[::-1,:],
+        #                 sc_pos = sc_pos[::-1,:],
+        #                 k=k,
+        #                 grainsize=1,
+        #                 bw=1. )
+
+        data = dict(
+            N_detectors=n_dets,
+            N_time_bins=n_time_bins,
+            max_N_time_bins=max_n_time_bins,
+            counts=counts_stan,
+            time=times_stan,
+            exposure=exposure_stan,
+            sc_pos=sc_pos,
+            k=k,
+            grainsize=1,
+            bw=1.0,
+        )
+
+
+        return data
+
+        
     def plot_all_annuli(
         self,
         projection="astro degrees mollweide",
