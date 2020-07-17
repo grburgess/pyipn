@@ -337,7 +337,7 @@ class Universe(object):
         for n, (det_nam, v) in enumerate(self._detectors.items()):
 
             lc = self._light_curves[det_nam]
-            c, t = lc.get_binned_light_curve(tstart, tstop, dt)
+            _, t, c = lc.get_binned_light_curve(tstart, tstop, dt)
             mid = np.mean([t[:-1], t[1:]], axis=0)
             e = t[1:] - t[:-1]
 

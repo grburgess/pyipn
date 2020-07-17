@@ -4,6 +4,7 @@ functions {
 
 data {
 
+
   int N_detectors; // number of detectors used
   int N_time_bins[N_detectors]; // the number of time bins in each detector
   int max_N_time_bins; // the max number of time bins
@@ -35,7 +36,7 @@ parameters {
   row_vector[k] omega2; // this weird MC integration thing.
 
 
-  
+
   vector[N_detectors]  log_bkg;
   vector[N_detectors] log_amplitude; // independent amplitude1 of LC 1; probably do not need right now...
 
@@ -54,7 +55,7 @@ transformed parameters {
 
   real scale = exp(log_scale) * inv_sqrt(k);
   real bw = exp(log_bw);
-  
+
 
   vector[N_detectors-1] dt;
 
@@ -63,6 +64,7 @@ transformed parameters {
 
   for (n in 1:N_detectors-1) {
 
+    
     dt[n] = time_delay(grb_xyz, sc_pos[1], sc_pos[n+1]);
 
   }
@@ -84,7 +86,7 @@ model {
 
   omega1 ~ normal(0, bw);
   omega2 ~ normal(0, bw);
-  
+
 
   log_amplitude ~ std_normal();
 
@@ -94,17 +96,17 @@ model {
   //tstart ~ normal(1,5);
 
   target += reduce_sum(partial_log_like_bw, counts[1], grainsize,
-		       time[1], exposure[1],
-		       omega1, omega2, beta1, beta2, bw,
-		       0., bkg[1], scale, amplitude[1]);
+                       time[1], exposure[1],
+                       omega1, omega2, beta1, beta2,
+                       0., bkg[1], scale, amplitude[1]);
 
 
   for (n in 2:N_detectors) {
 
     target += reduce_sum(partial_log_like_bw, counts[n,:N_time_bins[n]], grainsize,
-			 time[n,:N_time_bins[n]], exposure[n,:N_time_bins[n]],
-			 omega1, omega2, beta1, beta2, bw,
-			 dt[n-1], bkg[n], scale, amplitude[n]);
+                         time[n,:N_time_bins[n]], exposure[n,:N_time_bins[n]],
+                         omega1, omega2, beta1, beta2,
+                         dt[n-1], bkg[n], scale, amplitude[n]);
 
   }
 

@@ -26,7 +26,7 @@ class Detector(object):
         self._pointing = pointing
         self._location = location
         self._background_slope = 0.0
-        self._background_norm = 50.0
+        self._background_norm = 500.0
 
         self._name = name
 
