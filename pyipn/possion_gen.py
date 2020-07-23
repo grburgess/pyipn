@@ -2,7 +2,7 @@ import numpy as np
 from numba import jit, njit
 from pyipn.numba_array import VectorFloat64
 
-@njit
+@njit(fastmath=True)
 def norris(x, K, t_start, t_rise, t_decay):
     if x > t_start:
         return (
@@ -14,7 +14,27 @@ def norris(x, K, t_start, t_rise, t_decay):
         return 0.0
 
 
-@njit
+@njit(fastmath=True)
+def mulit_pulse(x, Ks, t_starts, t_rises, t_decays):
+
+    n_pulses = len(Ks)
+
+    out = 0.
+
+    for n in range(n_pulses):
+
+        out += norris(x, Ks[n], t_starts[n], t_rises[n], t_decays[n])
+
+
+    return out
+
+
+
+    
+
+
+    
+@njit(fastmath=True)
 def source_poisson_generator(tstart, tstop, K, p_start, t_rise, t_decay):
     """
     Non-homogeneous poisson process generator
@@ -57,6 +77,50 @@ def source_poisson_generator(tstart, tstop, K, p_start, t_rise, t_decay):
         return arrival_times.arr
 
 
+@njit(fastmath=True)
+def source_poisson_generator_multi(tstart, tstop, K, p_start, t_rise, t_decay):
+    """
+    Non-homogeneous poisson process generator
+    for a given max rate and time range, this function
+    generates time tags sampled from the energy integrated
+    lightcurve.
+    """
+
+
+    num_time_steps = 1000
+
+    time_grid = np.linspace(tstart, tstop + 1.0, num_time_steps)
+
+    tmp = np.zeros(num_time_steps)
+
+    for i in range(num_time_steps):
+        tmp[i] = mulit_pulse(time_grid[i], K, p_start, t_rise, t_decay)
+
+    fmax = tmp.max() #zeros if p_start > tstop!
+
+    time = tstart
+
+    arrival_times = VectorFloat64(0)
+
+    if tstart >= p_start:
+
+        arrival_times.append(tstart)
+
+    while time < tstop:
+
+        time = time - (1.0 / fmax) * np.log(np.random.rand())
+        test = np.random.rand()
+
+        p_test = mulit_pulse(time, K, p_start, t_rise, t_decay) / fmax
+
+        if test <= p_test:
+            arrival_times.append(time)
+
+    return arrival_times.arr
+
+
+
+    
 @njit
 def background_poisson_generator(tstart, tstop, slope, intercept):
     """
