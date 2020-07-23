@@ -173,6 +173,13 @@ class Universe(object):
 
             grb_params = setup["grb"]
 
+            if "t_start" in grb_params:
+
+                t_start = grb_params["t_start"]
+            else:
+
+                t_start = None
+            
             grb = GRB(
                 grb_params["ra"],
                 grb_params["dec"],
@@ -180,6 +187,7 @@ class Universe(object):
                 grb_params["K"],
                 grb_params["t_rise"],
                 grb_params["t_decay"],
+                t_start
             )
 
             universe = cls(grb)

@@ -4,7 +4,7 @@ from .geometry import GRBLocation
 
 
 class GRB(object):
-    def __init__(self, ra, dec, distance, K, t_rise, t_decay):
+    def __init__(self, ra, dec, distance, K, t_rise, t_decay, t_start=None):
         """
 
         A GRB that emits a spectrum as a given location
@@ -27,6 +27,7 @@ class GRB(object):
         self._K = K
         self._t_rise = t_rise
         self._t_decay = t_decay
+        self._t_start = t_start
 
     @property
     def pulse_parameters(self):
@@ -37,7 +38,7 @@ class GRB(object):
 
         """
 
-        return self._K, self._t_rise, self._t_decay
+        return self._K, self._t_rise, self._t_decay, self._t_start
 
     @property
     def location(self):

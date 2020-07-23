@@ -30,10 +30,7 @@ def mulit_pulse(x, Ks, t_starts, t_rises, t_decays):
 
 
 
-    
-
-
-    
+        
 @njit(fastmath=True)
 def source_poisson_generator(tstart, tstop, K, p_start, t_rise, t_decay):
     """
@@ -102,7 +99,7 @@ def source_poisson_generator_multi(tstart, tstop, K, p_start, t_rise, t_decay):
 
     arrival_times = VectorFloat64(0)
 
-    if tstart >= p_start:
+    if tstart >= min(p_start):
 
         arrival_times.append(tstart)
 
