@@ -13,16 +13,20 @@ import h5py
 
 from .effective_area import EffectiveArea
 from .geometry import Pointing, DetectorLocation, Location
-
+from .lightcurve import LightCurve
 from .grb import GRB
 from .detector import Detector
 
 from .io.plotting.projection import *
 from .io.plotting.spherical_circle import SphericalCircle, get_3d_circle
+from .utils.hdf5_utils import (
+    recursively_load_dict_contents_from_group,
+    recursively_save_dict_contents_to_group,
+)
 
 
 class Universe(object):
-    def __init__(self, grb):
+    def __init__(self, grb, yaml_dict=None, locked=False):
         """FIXME! briefly describe function
 
         :param grb: 
@@ -43,6 +47,9 @@ class Universe(object):
         self._light_curves = None
         self._n_detectors = 0
 
+        self._locked = locked
+        self._yaml_dict = yaml_dict
+
     def register_detector(self, detector):
         """FIXME! briefly describe function
 
@@ -58,7 +65,6 @@ class Universe(object):
 
         assert self._n_detectors == len(self._detectors.keys())
 
-
     @property
     def grb(self):
         self._grb
@@ -67,8 +73,6 @@ class Universe(object):
     def T0(self):
         return self._T0
 
-        
-        
     @property
     def detectors(self):
         return self._detectors
@@ -90,9 +94,14 @@ class Universe(object):
 
         """
 
-        self._compute_time_differences()
+        if not self._locked:
 
-        self._create_light_curves(tstart, tstop)
+            self._compute_time_differences()
+
+            self._create_light_curves(tstart, tstop)
+        else:
+
+            print("This universe is locked")
 
     def _compute_time_differences(self):
         """FIXME! briefly describe function
@@ -165,6 +174,62 @@ class Universe(object):
                 self._grb, t0, tstart, tstop
             )
 
+    def write_to(self, file_name):
+
+        src_lc = []
+        bkg_lc = []
+
+        for k, v in self._light_curves.items():
+
+            src_lc.append(v.source_arrival_times)
+            bkg_lc.append(v.bkg_arrival_times)
+
+        uni_save = UniverseSave(self._yaml_dict, src_lc, bkg_lc)
+
+        uni_save.write_to(file_name)
+
+    @classmethod
+    def from_dict(cls, d, locked=False):
+
+        grb_params = d["grb"]
+
+        if "t_start" in grb_params:
+
+            t_start = grb_params["t_start"]
+        else:
+
+            t_start = None
+
+        grb = GRB(
+            grb_params["ra"],
+            grb_params["dec"],
+            grb_params["distance"] * u.Mpc,
+            grb_params["K"],
+            grb_params["t_rise"],
+            grb_params["t_decay"],
+            t_start,
+        )
+
+        universe = cls(grb, yaml_dict=d, locked=locked)
+
+        for name, value in d["detectors"].items():
+
+            eff_area = EffectiveArea(value["effective_area"])
+
+            time = Time(value["time"])
+
+            location = DetectorLocation(
+                value["ra"], value["dec"], value["altitude"] * u.km, time
+            )
+
+            pointing = Pointing(value["pointing"]["ra"], value["pointing"]["dec"])
+
+            det = Detector(location, pointing, eff_area, name)
+
+            universe.register_detector(det)
+
+        return universe
+
     @classmethod
     def from_yaml(cls, yaml_file):
         """
@@ -181,44 +246,26 @@ class Universe(object):
 
             setup = yaml.load(f, Loader=yaml.SafeLoader)
 
-            grb_params = setup["grb"]
+            universe = cls.from_dict(setup)
 
-            if "t_start" in grb_params:
+        return universe
 
-                t_start = grb_params["t_start"]
-            else:
+    @classmethod
+    def from_save_file(cls, file_name):
 
-                t_start = None
-            
-            grb = GRB(
-                grb_params["ra"],
-                grb_params["dec"],
-                grb_params["distance"] * u.Mpc,
-                grb_params["K"],
-                grb_params["t_rise"],
-                grb_params["t_decay"],
-                t_start
-            )
+        uni_save = UniverseSave.from_file(file_name)
 
-            universe = cls(grb)
+        universe = cls.from_dict(uni_save.yaml_dict, locked=True)
 
-            for name, value in setup["detectors"].items():
+        universe._light_curves = collections.OrderedDict()
 
-                eff_area = EffectiveArea(value["effective_area"])
+        for i, (k, v) in enumerate(universe.detectors.items()):
 
-                time = Time(value["time"])
+            lc = LightCurve(uni_save.source_lightcurves[i], uni_save.bkg_lightcurves[i])
 
-                location = DetectorLocation(
-                    value["ra"], value["dec"], value["altitude"] * u.km, time
-                )
+            universe._light_curves[k] = lc
 
-                pointing = Pointing(value["pointing"]["ra"], value["pointing"]["dec"])
-
-                det = Detector(location, pointing, eff_area, name)
-
-                universe.register_detector(det)
-
-            return universe
+        return universe
 
     def calculate_annulus(self, detector1, detector2):
         """FIXME! briefly describe function
@@ -277,7 +324,7 @@ class Universe(object):
         radius=None,
         center=None,
         threeD=True,
-        **kwargs
+        **kwargs,
     ):
 
         if not threeD:
@@ -412,7 +459,7 @@ class Universe(object):
         center=None,
         cmap="Set1",
         threeD=True,
-        **kwargs
+        **kwargs,
     ):
 
         if not threeD:
@@ -528,26 +575,65 @@ class Universe(object):
         return grb_loc
 
 
-
 class UniverseSave(object):
-
-
     def __init__(self, yaml_dict, source_lightcurves, bkg_lightcurves):
-
 
         self._yaml_dict = yaml_dict
         self._source_lightcurves = source_lightcurves
         self._bkg_lightcurves = bkg_lightcurves
 
+        assert len(source_lightcurves) == len(bkg_lightcurves)
+
+        self._n_light_curves = len(source_lightcurves)
+
     def write_to(self, file_name):
 
-        pass
+        with h5py.File(file_name, "w") as f:
+
+            recursively_save_dict_contents_to_group(f, "yaml", self._yaml_dict)
+
+            f.attrs["n_dets"] = self._n_light_curves
+
+            for i in range(self._n_light_curves):
+
+                f.create_dataset(
+                    f"src_lc{i}", data=self._source_lightcurves[i], compression="gzip"
+                )
+                f.create_dataset(
+                    f"bkg_lc{i}", data=self._bkg_lightcurves[i], compression="gzip"
+                )
 
     @classmethod
-    def from_file(self, file_name):
+    def from_file(cls, file_name):
 
-        pass
+        with h5py.File(file_name, "r") as f:
 
-        
+            yaml_dict = recursively_load_dict_contents_from_group(f, "yaml")
 
-    
+            
+            src_lcs = []
+            bkg_lcs = []
+
+            n_light_curves = f.attrs["n_dets"]
+
+            for i in range(n_light_curves):
+
+                src_lcs.append(f[f"src_lc{i}"][()])
+                bkg_lcs.append(f[f"bkg_lc{i}"][()])
+
+        return cls(yaml_dict, src_lcs, bkg_lcs)
+
+    @property
+    def yaml_dict(self):
+
+        return self._yaml_dict
+
+    @property
+    def source_lightcurves(self):
+
+        return self._source_lightcurves
+
+    @property
+    def bkg_lightcurves(self):
+
+        return self._bkg_lightcurves

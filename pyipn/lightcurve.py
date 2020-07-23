@@ -80,10 +80,11 @@ class LightCurve(object):
         return fig
 
     @property
-    def source_arrival_time(self):
+    def source_arrival_times(self):
 
         return self._source_arrival_time
 
-    @projection
+    @property
     def bkg_arrival_times(self):
+        
         return self._bkg_arrival_times
