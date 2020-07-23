@@ -49,7 +49,8 @@ parameters {
   vector[N_detectors] log_amplitude; // independent amplitude1 of LC 1; probably do not need right now...
 
   real log_scale;
-  real bw;
+  
+  real<lower=0> bw;
 
   unit_vector[3] grb_xyz; // GRB cartesian location
 

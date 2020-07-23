@@ -9,7 +9,7 @@ from astropy.coordinates import SkyCoord, UnitSphericalRepresentation
 from mpltools import color as mpl_color
 import matplotlib.pyplot as plt
 import ipyvolume as ipv
-
+import h5py
 
 from .effective_area import EffectiveArea
 from .geometry import Pointing, DetectorLocation, Location
@@ -58,6 +58,17 @@ class Universe(object):
 
         assert self._n_detectors == len(self._detectors.keys())
 
+
+    @property
+    def grb(self):
+        self._grb
+
+    @property
+    def T0(self):
+        return self._T0
+
+        
+        
     @property
     def detectors(self):
         return self._detectors
@@ -518,3 +529,28 @@ class Universe(object):
         )
         norm_grb_loc = grb_loc.get_norm_vec(u.km)
         return grb_loc
+
+
+
+class UniverseSave(object):
+
+
+    def __init__(self, yaml_dict, source_lightcurves, bkg_lightcurves):
+
+
+        self._yaml_dict = yaml_dict
+        self._source_lightcurves = source_lightcurves
+        self._bkg_lightcurves = bkg_lightcurves
+
+    def write_to(self, file_name):
+
+        pass
+
+    @classmethod
+    def from_file(self, file_name):
+
+        pass
+
+        
+
+    

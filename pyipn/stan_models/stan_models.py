@@ -5,7 +5,7 @@ import numpy as np
 import pkg_resources
 import os
 
-_available_models = ["rff_ipn.stan", "rff_omega_ipn.stan", "rff_bw_ipn.stan"]
+_available_models = ["rff_ipn.stan", "rff_omega_ipn.stan", "rff_bw_ipn.stan","rff.stan"]
 
 
 def get_stan_model(stan_model):

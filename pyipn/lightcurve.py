@@ -78,3 +78,12 @@ class LightCurve(object):
         ax.set_xlabel("time")
 
         return fig
+
+    @property
+    def source_arrival_time(self):
+
+        return self._source_arrival_time
+
+    @projection
+    def bkg_arrival_times(self):
+        return self._bkg_arrival_times
