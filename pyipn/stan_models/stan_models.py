@@ -2,8 +2,10 @@ import cmdstanpy
 import arviz
 import ipyvolume as ipv
 import numpy as np
+import pkg_resources
+import os
 
-_available_models = ["rff_ipn.stan", "rff_omega_ipn.stan"]
+_available_models = ["rff_ipn.stan", "rff_omega_ipn.stan", "rff_bw_ipn.stan","rff.stan"]
 
 
 def get_stan_model(stan_model):
@@ -12,8 +14,12 @@ def get_stan_model(stan_model):
         stan_model in _available_models
     ), f"{stan_model} is not in {','.join(_available_models)}"
 
+    stan_file =  pkg_resources.resource_filename(
+                    "pyipn", os.path.join("stan_models", stan_model))
+
+    
     model = cmdstanpy.CmdStanModel(
-        stan_file=stan_model, cpp_options={"STAN_THREADS": "TRUE"}
+        stan_file=stan_file, cpp_options={"STAN_THREADS": "TRUE"}
     )
 
     return model
@@ -27,11 +33,11 @@ def plot_stan_fit(fit, universe, cmap="Set1", color="blue"):
 
     rad = universe.grb_radius
 
-    scatter = rad + np.random.normal(0, rad * 0.05, size=len(raw_xyz))
+    # scatter = rad + np.random.normal(0, rad * 0.05, size=len(raw_xyz))
 
     universe.plot_all_annuli(cmap=cmap, lw=3, threeD=True)
 
-    xyz = scatter * raw_xyz
+    xyz = rad * raw_xyz
 
     ipv.scatter(
         xyz[:, 0], xyz[:, 1], xyz[:, 2], marker="sphere", color=color, size=0.7

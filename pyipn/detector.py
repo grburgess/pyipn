@@ -3,7 +3,7 @@ import astropy.constants as constants
 
 
 from .lightcurve import LightCurve
-from .possion_gen import source_poisson_generator, background_poisson_generator
+from .possion_gen import source_poisson_generator,source_poisson_generator_multi, background_poisson_generator
 
 
 class Detector(object):
@@ -26,7 +26,7 @@ class Detector(object):
         self._pointing = pointing
         self._location = location
         self._background_slope = 0.0
-        self._background_norm = 50.0
+        self._background_norm = 500.0
 
         self._name = name
 
@@ -121,18 +121,54 @@ class Detector(object):
 
         # now get the grb's pulse parameters
 
-        K, t_rise, t_decay = grb.pulse_parameters
+        K, t_rise, t_decay, t_start = grb.pulse_parameters
 
-        # scale the GRB by the effective area
-
-        observed_intensity = K * self._effective_area.effective_area
-
-        # compute the arrival times
         
-        source_arrival_times = source_poisson_generator(
-            tstart, tstop, observed_intensity, T0, t_rise, t_decay
-        )
+        
+        try:
 
+            len(K)
+
+            assert len(K) == len(t_rise)
+            assert len(K) == len(t_decay)
+            assert len(K) == len(t_start)
+            
+            is_multi_pulse = True
+
+        except:
+
+            is_multi_pulse = False
+
+        if not is_multi_pulse:
+
+            # scale the GRB by the effective area
+
+            observed_intensity = K * self._effective_area.effective_area
+
+            # compute the arrival times
+
+            source_arrival_times = source_poisson_generator(
+                tstart, tstop, observed_intensity, T0, t_rise, t_decay
+            )
+
+        else:
+
+            K = np.array(K)
+            t_rise = np.array(t_rise)
+            t_decay = np.array(t_decay)
+            t_start = np.array(t_start)
+
+            observed_intensity = K * self._effective_area.effective_area
+
+            # scale all the pulses
+
+            t_start += T0
+
+            source_arrival_times = source_poisson_generator_multi(
+                tstart, tstop, observed_intensity, t_start, t_rise, t_decay)
+
+            
+            
         bkg_arrival_times = background_poisson_generator(
             tstart, tstop, self._background_slope, self._background_norm
         )

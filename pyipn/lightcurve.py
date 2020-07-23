@@ -37,13 +37,13 @@ class LightCurve(object):
 
         # histogram the counts
 
-        hist, edges = np.histogram(self._arrival_times, bins=bins)
+        counts, edges = np.histogram(self._arrival_times, bins=bins)
 
         # compute the rate
 
-        rate = hist / dt
+        rate = counts / dt
 
-        return rate, edges
+        return rate, edges, counts
 
     def display(self, tstart, tstop, dt, ax=None,**kwargs):
         """FIXME! briefly describe function
@@ -56,7 +56,7 @@ class LightCurve(object):
 
         """
 
-        rate, edges = self.get_binned_light_curve(tstart, tstop, dt)
+        rate, edges, _ = self.get_binned_light_curve(tstart, tstop, dt)
 
         err = np.sqrt(rate)
 
@@ -78,3 +78,12 @@ class LightCurve(object):
         ax.set_xlabel("time")
 
         return fig
+
+    @property
+    def source_arrival_time(self):
+
+        return self._source_arrival_time
+
+    @projection
+    def bkg_arrival_times(self):
+        return self._bkg_arrival_times

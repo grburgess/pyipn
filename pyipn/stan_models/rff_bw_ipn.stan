@@ -4,6 +4,7 @@ functions {
 
 data {
 
+
   int N_detectors; // number of detectors used
   int N_time_bins[N_detectors]; // the number of time bins in each detector
   int max_N_time_bins; // the max number of time bins
@@ -15,9 +16,6 @@ data {
 
 
   vector[3] sc_pos[N_detectors]; // the 3D vector for each space craft
-
-  real bw; // the input bw
-
 
   int<lower=1> k; // number of FFs
 
@@ -51,8 +49,8 @@ parameters {
   vector[N_detectors] log_amplitude; // independent amplitude1 of LC 1; probably do not need right now...
 
   real log_scale;
-
-
+  
+  real<lower=0> bw;
 
   unit_vector[3] grb_xyz; // GRB cartesian location
 
@@ -65,8 +63,7 @@ transformed parameters {
   vector[N_detectors] amplitude = exp(log_amplitude);
 
   real scale = exp(log_scale) * inv_sqrt(k);
-
-
+ 
   vector[N_detectors-1] dt;
 
   // compute all time delays relative to the first
@@ -74,11 +71,10 @@ transformed parameters {
 
   for (n in 1:N_detectors-1) {
 
+    
     dt[n] = time_delay(grb_xyz, sc_pos[1], sc_pos[n+1]);
 
   }
-
-
 
 
 }
@@ -92,11 +88,9 @@ model {
 
   log_scale ~ std_normal();
 
-  log_bkg ~ normal(log(500), log(50));
+  log_bkg ~ normal(log(50), 1);
+  bw ~ normal(5, 3);
 
-  /* if (fit_for_bw == 1) { */
-  /*   log_bw ~ normal(-1, 2); */
-  /* } */
 
   log_amplitude ~ std_normal();
 
@@ -105,20 +99,18 @@ model {
   //  log_duration ~ normal(1,.2);
   //tstart ~ normal(1,5);
 
-  target += reduce_sum(partial_log_like, counts[1], grainsize,
-		       time[1], exposure[1],
-		       omega1, omega2, beta1, beta2, bw,
-		       0., bkg[1], scale, amplitude[1]);
+  target += reduce_sum(partial_log_like_bw, counts[1], grainsize,
+                       time[1], exposure[1],
+                       omega1, omega2, beta1, beta2,
+                       0., bkg[1], scale, amplitude[1]);
 
 
   for (n in 2:N_detectors) {
 
-    target += reduce_sum(partial_log_like, counts[n,:N_time_bins[n]], grainsize,
-			 time[n,:N_time_bins[n]], exposure[n,:N_time_bins[n]],
-			 omega1, omega2, beta1, beta2, bw,
-			 dt[n-1], bkg[n], scale, amplitude[n]);
-
-
+    target += reduce_sum(partial_log_like_bw, counts[n,:N_time_bins[n]], grainsize,
+                         time[n,:N_time_bins[n]], exposure[n,:N_time_bins[n]],
+                         omega1, omega2, beta1, beta2,
+                         dt[n-1], bkg[n], scale, amplitude[n]);
 
   }
 
@@ -138,6 +130,5 @@ generated quantities {
   omega[1, :] = omega1';
   omega[2, :] = omega2';
 
-  
 
 }
