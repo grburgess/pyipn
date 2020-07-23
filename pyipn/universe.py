@@ -66,11 +66,10 @@ class Universe(object):
     def light_curves(self):
         return self._light_curves
 
-
     @property
     def grb_radius(self):
         return self._grb_radius
-    
+
     def explode_grb(self, tstart, tstop, verbose=True):
         """FIXME! briefly describe function
 
@@ -385,10 +384,8 @@ class Universe(object):
             bw=1.0,
         )
 
-
         return data
 
-        
     def plot_all_annuli(
         self,
         projection="astro degrees mollweide",
