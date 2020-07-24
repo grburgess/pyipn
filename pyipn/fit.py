@@ -151,7 +151,7 @@ class Fit(object):
     def plot_location_fit(self):
         pass
 
-    def plot_light_curve_fit(self, detector,tstart, tstop, dt=.2, use_bw=False):
+    def plot_light_curve_fit(self, detector,tstart, tstop, dt=.2, use_bw=False, thin=1):
 
         self._detector_check(detector)
         assert self._has_universe
@@ -180,7 +180,7 @@ class Fit(object):
 
             bkg = self._background
         
-        for i in range(self._n_samples):
+        for i in range(self._n_samples)[::thin]:
 
             ax.plot(mid_points, pred_rate[i] + bkg[i], color="r", alpha=0.05)
         

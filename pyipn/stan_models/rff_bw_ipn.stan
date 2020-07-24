@@ -99,17 +99,17 @@ model {
   //  log_duration ~ normal(1,.2);
   //tstart ~ normal(1,5);
 
-  target += reduce_sum(partial_log_like_bw, counts[1], grainsize,
+  target += reduce_sum(partial_log_like, counts[1], grainsize,
                        time[1], exposure[1],
-                       omega1, omega2, beta1, beta2,
+                       omega1, omega2, beta1, beta2,bw,
                        0., bkg[1], scale, amplitude[1]);
 
 
   for (n in 2:N_detectors) {
 
-    target += reduce_sum(partial_log_like_bw, counts[n,:N_time_bins[n]], grainsize,
+    target += reduce_sum(partial_log_like, counts[n,:N_time_bins[n]], grainsize,
                          time[n,:N_time_bins[n]], exposure[n,:N_time_bins[n]],
-                         omega1, omega2, beta1, beta2,
+                         omega1, omega2, beta1, beta2,bw,
                          dt[n-1], bkg[n], scale, amplitude[n]);
 
   }

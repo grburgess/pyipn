@@ -32,8 +32,8 @@ parameters {
   vector[k] beta1; // the amplitude along the cos basis
   vector[k] beta2; // the amplitude along the sin basis
 
-  row_vector[k] omega1; // this weird MC integration thing.
-  row_vector[k] omega2; // this weird MC integration thing.
+  row_vector[k] omega[2]; // this weird MC integration thing.
+  
 
 
 
@@ -82,10 +82,11 @@ model {
   log_scale ~ std_normal();
 
   log_bkg ~ normal(log(50), 1);
-  log_bw ~ normal(0, 1);
+  log_bw ~ normal(0, .5);
 
-  omega1 ~ normal(0, bw);
-  omega2 ~ normal(0, bw);
+  omega[1] ~ normal(0, bw);
+  omega[2] ~ normal(0, bw);
+  
 
 
   log_amplitude ~ std_normal();
@@ -97,7 +98,7 @@ model {
 
   target += reduce_sum(partial_log_like_bw, counts[1], grainsize,
                        time[1], exposure[1],
-                       omega1, omega2, beta1, beta2,
+                       omega[1], omega[2], beta1, beta2,
                        0., bkg[1], scale, amplitude[1]);
 
 
@@ -105,7 +106,7 @@ model {
 
     target += reduce_sum(partial_log_like_bw, counts[n,:N_time_bins[n]], grainsize,
                          time[n,:N_time_bins[n]], exposure[n,:N_time_bins[n]],
-                         omega1, omega2, beta1, beta2,
+                         omega[1], omega[2], beta1, beta2,
                          dt[n-1], bkg[n], scale, amplitude[n]);
 
   }

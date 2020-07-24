@@ -132,6 +132,8 @@ generated quantities {
   real grb_phi = atan2(grb_xyz[2], grb_xyz[1]);
   real grb_theta = -( acos(grb_xyz[3]) - 0.5*pi());
 
+  real bw_out = bw;
+  
   vector[k] omega[2];
 
 

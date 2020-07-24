@@ -5,7 +5,7 @@ import numpy as np
 import pkg_resources
 import os
 
-_available_models = ["rff_ipn.stan", "rff_omega_ipn.stan", "rff_bw_ipn.stan","rff.stan"]
+_available_models = ["rff_ipn.stan", "rff_omega_ipn.stan", "rff_bw_ipn.stan","rff.stan", "rff_bw.stan"]
 
 
 def get_stan_model(stan_model):
@@ -42,3 +42,8 @@ def plot_stan_fit(fit, universe, cmap="Set1", color="blue"):
     ipv.scatter(
         xyz[:, 0], xyz[:, 1], xyz[:, 2], marker="sphere", color=color, size=0.7
     )
+
+def list_stan_models():
+    for m in _available_models:
+
+        print(m)

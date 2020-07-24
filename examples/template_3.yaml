@@ -20,7 +20,7 @@ detectors:
 
   det3:
 
-     ra: 200.
+     ra: 300.
      dec: -45.
      altitude: 153000.
      time: '2010-01-01T00:00:00'
@@ -37,8 +37,8 @@ detectors:
   det2:
 
     # it's location in GCRS
-    ra: 20.
-    dec: 80.
+    ra: 60.
+    dec: 10.
     altitude: 500  #153000. # km
     time: '2010-01-01T00:00:00' # time of detection
 
