@@ -115,3 +115,8 @@ pyipn/test.ipynb
 /prototype/PoissonApproxTest.r
 /prototype/data.r
 /prototype/demo.ipynb
+*.json
+/prototype/*.csv
+*.d
+*.hpp
+*.o
