@@ -67,7 +67,7 @@ class Universe(object):
 
     @property
     def grb(self):
-        self._grb
+        return self._grb
 
     @property
     def T0(self):
@@ -200,14 +200,13 @@ class Universe(object):
 
             t_start = None
 
-
         if isinstance(grb_params["K"], list):
 
             grb_params["K"] = np.array(grb_params["K"])
             grb_params["t_rise"] = np.array(grb_params["t_rise"])
             grb_params["t_decay"] = np.array(grb_params["t_decay"])
             grb_params["t_start"] = np.array(grb_params["t_start"])
-            
+
         grb = GRB(
             grb_params["ra"],
             grb_params["dec"],
@@ -273,9 +272,8 @@ class Universe(object):
 
             universe._light_curves[k] = lc
 
-
         universe._compute_time_differences()
-            
+
         return universe
 
     def calculate_annulus(self, detector1, detector2):
@@ -621,7 +619,6 @@ class UniverseSave(object):
 
             yaml_dict = recursively_load_dict_contents_from_group(f, "yaml")
 
-            
             src_lcs = []
             bkg_lcs = []
 

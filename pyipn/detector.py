@@ -3,7 +3,7 @@ import astropy.constants as constants
 
 
 from .lightcurve import LightCurve
-from .possion_gen import source_poisson_generator,source_poisson_generator_multi, background_poisson_generator
+from .possion_gen import source_poisson_generator, background_poisson_generator
 
 
 class Detector(object):
@@ -123,8 +123,6 @@ class Detector(object):
 
         K, t_rise, t_decay, t_start = grb.pulse_parameters
 
-        
-        
         try:
 
             len(K)
@@ -132,7 +130,7 @@ class Detector(object):
             assert len(K) == len(t_rise)
             assert len(K) == len(t_decay)
             assert len(K) == len(t_start)
-            
+
             is_multi_pulse = True
 
         except:
@@ -164,11 +162,10 @@ class Detector(object):
 
             t_start += T0
 
-            source_arrival_times = source_poisson_generator_multi(
-                tstart, tstop, observed_intensity, t_start, t_rise, t_decay)
+            source_arrival_times = source_poisson_generator(
+                tstart, tstop, observed_intensity, t_start, t_rise, t_decay
+            )
 
-            
-            
         bkg_arrival_times = background_poisson_generator(
             tstart, tstop, self._background_slope, self._background_norm
         )
