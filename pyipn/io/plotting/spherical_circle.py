@@ -73,7 +73,9 @@ class SphericalCircle(PathPatch):
                 codes.append(Path.LINETO)
             last = v[0]
 
-        circle_path = Path(vertices, codes)
+        circle_path = Path(vertices,
+                           codes
+        )
 
         super().__init__(circle_path, **kwargs)
 
@@ -91,7 +93,7 @@ def compute_xyz(ra, dec, radius=100):
     return radius * out
 
 
-def get_3d_circle(center, theta, radius, resolution=100):
+def get_lon_lat(center, theta, radius=1, resolution=100):
 
     longitude, latitude = center
 
@@ -105,5 +107,12 @@ def get_3d_circle(center, theta, radius, resolution=100):
     lat = np.repeat(0.5 * np.pi - theta.to_value(u.radian), resolution) * u.radian
 
     lon, lat = _rotate_polygon(lon, lat, longitude, latitude)
+
+    return lon, lat
+
+
+def get_3d_circle(center, theta, radius, resolution=100):
+
+    lon, lat = get_lon_lat(center, theta, radius, resolution)
 
     return compute_xyz(lon, lat, radius)

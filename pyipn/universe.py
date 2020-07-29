@@ -18,10 +18,17 @@ from .grb import GRB
 from .detector import Detector
 
 from .io.plotting.projection import *
+from .io.plotting.projection import create_skw_dict
 from .io.plotting.spherical_circle import SphericalCircle, get_3d_circle
 from .utils.hdf5_utils import (
     recursively_load_dict_contents_from_group,
     recursively_save_dict_contents_to_group,
+)
+
+from .utils.timing import (
+    compute_annulus_from_time_delay,
+    calculate_distance_and_norm,
+    theta_from_time_delay,
 )
 
 
@@ -287,40 +294,16 @@ class Universe(object):
         """
 
         d1, d2 = self._detectors[detector1], self._detectors[detector2]
-        dxyz = (
-            d2.location.get_cartesian_coord().xyz
-            - d1.location.get_cartesian_coord().xyz
-        )
 
-        # calculate ra and dec of vector d  pointing from detector1 to detector2
-        dcart = Location(
-            SkyCoord(
-                x=dxyz[0],
-                y=dxyz[1],
-                z=dxyz[2],
-                representation_type="cartesian",
-                unit="km",
-                frame="icrs",
-            )
-        )
+        distance, norm_d, ra, dec = calculate_distance_and_norm(d1, d2)
 
-        norm_d = dcart.get_norm_vec(u.km)
-        ra = dcart.coord.represent_as(UnitSphericalRepresentation).lon
-        dec = dcart.coord.represent_as(UnitSphericalRepresentation).lat
-
-        # calculate angle theta between center point d and annulus
-        distance = np.linalg.norm(dxyz)
         dt = (
             self._T0[list(self._detectors.keys()).index(detector1)]
             - self._T0[list(self._detectors.keys()).index(detector2)]
-        ) * u.s
+        ) * u.second  # seconds
         # rounding to 15th decimal because small numerical errors cause issues with numbers slightly over 1
 
-        arg = constants.c * dt / distance
-
-        theta = np.arccos(
-            np.around(arg.decompose().to(u.dimensionless_unscaled).value, 15)
-        )
+        theta = theta_from_time_delay(dt, distance)
 
         return (norm_d, np.array([ra.value, dec.value]) * ra.unit, theta * u.rad)
 
@@ -339,28 +322,7 @@ class Universe(object):
         if not threeD:
             if ax is None:
 
-                assert projection in [
-                    "astro degrees aitoff",
-                    "astro degrees mollweide",
-                    "astro hours aitoff",
-                    "astro hours mollweide",
-                    "astro globe",
-                    "astro zoom",
-                ]
-
-                skw_dict = dict(projection=projection)
-
-                if projection in ["astro globe", "astro zoom"]:
-
-                    assert center is not None, "you must specify a center"
-
-                    skw_dict = dict(projection=projection, center=center)
-
-                if projection == "astro zoom":
-
-                    assert radius is not None, "you must specify a radius"
-
-                    skw_dict = dict(projection=projection, center=center, radius=radius)
+                skw_dict = create_skw_dict(projection, center, radius)
 
                 fig, ax = plt.subplots(subplot_kw=skw_dict)
 

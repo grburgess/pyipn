@@ -111,9 +111,9 @@ def source_poisson_generator(tstart, tstop, K, p_start, t_rise, t_decay):
 
     arrival_times = VectorFloat64(0)
 
-    if tstart >= p_start:
+    # if tstart >= p_start:
 
-        arrival_times.append(tstart)
+    arrival_times.append(tstart)
 
     while time < tstop:
 
