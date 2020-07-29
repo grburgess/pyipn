@@ -2,8 +2,7 @@ from astropy.coordinates import SkyCoord
 from astropy.io.fits import Header
 from astropy.time import Time
 from astropy.visualization.wcsaxes import WCSAxes
-from astropy.visualization.wcsaxes.formatter_locator import (
-    AngleFormatterLocator)
+from astropy.visualization.wcsaxes.formatter_locator import AngleFormatterLocator
 from astropy.visualization.wcsaxes.frame import EllipticalFrame
 from astropy.wcs import WCS
 from astropy import units as u
@@ -18,18 +17,46 @@ import scipy.optimize
 from .angle import reference_angle_deg
 
 __all__ = (
-    'AstroDegreesAitoffAllSkyAxes',
-    'AstroDegreesMollweideAllSkyAxes',
-    'AstroHoursAitoffAllSkyAxes',
-    'AstroHoursMollweideAllSkyAxes',
-    'AutoScaledWCSAxes',
-    'GeoDegreesAitoffAllSkyAxes',
-    'GeoDegreesMollweideAllSkyAxes',
-    'GeoHoursAitoffAllSkyAxes',
-    'GeoHoursMollweideAllSkyAxes',
-    'GlobeAxes',
-    'ScaleBar',
-    'ZoomSkyAxes')
+    "AstroDegreesAitoffAllSkyAxes",
+    "AstroDegreesMollweideAllSkyAxes",
+    "AstroHoursAitoffAllSkyAxes",
+    "AstroHoursMollweideAllSkyAxes",
+    "AutoScaledWCSAxes",
+    "GeoDegreesAitoffAllSkyAxes",
+    "GeoDegreesMollweideAllSkyAxes",
+    "GeoHoursAitoffAllSkyAxes",
+    "GeoHoursMollweideAllSkyAxes",
+    "GlobeAxes",
+    "ScaleBar",
+    "ZoomSkyAxes",
+)
+
+
+def create_skw_dict(projection, center, radius):
+    assert projection in [
+        "astro degrees aitoff",
+        "astro degrees mollweide",
+        "astro hours aitoff",
+        "astro hours mollweide",
+        "astro globe",
+        "astro zoom",
+    ]
+
+    skw_dict = dict(projection=projection)
+
+    if projection in ["astro globe", "astro zoom"]:
+
+        assert center is not None, "you must specify a center"
+
+        skw_dict = dict(projection=projection, center=center)
+
+    if projection == "astro zoom":
+
+        assert radius is not None, "you must specify a radius"
+
+        skw_dict = dict(projection=projection, center=center, radius=radius)
+
+    return skw_dict
 
 
 class WCSInsetPatch(PathPatch):
@@ -39,15 +66,18 @@ class WCSInsetPatch(PathPatch):
     def __init__(self, ax, *args, **kwargs):
         self._ax = ax
         super(WCSInsetPatch, self).__init__(
-            None, *args, fill=False,
+            None,
+            *args,
+            fill=False,
             edgecolor=ax.coords.frame.get_color(),
             linewidth=ax.coords.frame.get_linewidth(),
-            **kwargs)
+            **kwargs
+        )
 
     def get_path(self):
         frame = self._ax.coords.frame
-        return frame.patch.get_path().interpolated(50).transformed(
-            frame.transform)
+        return frame.patch.get_path().interpolated(50).transformed(frame.transform)
+
 
 class WCSInsetConnectionPatch(ConnectionPatch):
     """Patch to connect an inset WCS axes inside another WCS axes."""
@@ -60,15 +90,23 @@ class WCSInsetConnectionPatch(ConnectionPatch):
         except KeyError:
             loc = int(loc)
         corners = ax_inset.viewLim.corners()
-        transform = (ax_inset.coords.frame.transform +
-                     ax.coords.frame.transform.inverted())
+        transform = (
+            ax_inset.coords.frame.transform + ax.coords.frame.transform.inverted()
+        )
         xy_inset = corners[self._corners_map[loc]]
         xy = transform.transform_point(xy_inset)
         super(WCSInsetConnectionPatch, self).__init__(
-            xy, xy_inset, 'data', 'data', ax, ax_inset, *args,
+            xy,
+            xy_inset,
+            "data",
+            "data",
+            ax,
+            ax_inset,
+            *args,
             color=ax_inset.coords.frame.get_color(),
             linewidth=ax_inset.coords.frame.get_linewidth(),
-            **kwargs)
+            **kwargs
+        )
 
 
 class AutoScaledWCSAxes(WCSAxes):
@@ -78,20 +116,20 @@ class AutoScaledWCSAxes(WCSAxes):
     def __init__(self, header, *args, **kwargs):
         super(AutoScaledWCSAxes, self).__init__(*args, aspect=1, **kwargs)
         h = Header(header, copy=True)
-        naxis1 = h['NAXIS1']
-        naxis2 = h['NAXIS2']
+        naxis1 = h["NAXIS1"]
+        naxis2 = h["NAXIS2"]
         scale = min(self.bbox.width / naxis1, self.bbox.height / naxis2)
-        h['NAXIS1'] = int(np.ceil(naxis1 * scale))
-        h['NAXIS2'] = int(np.ceil(naxis2 * scale))
-        scale1 = h['NAXIS1'] / naxis1
-        scale2 = h['NAXIS2'] / naxis2
-        h['CRPIX1'] = (h['CRPIX1'] - 1) * (h['NAXIS1'] - 1) / (naxis1 - 1) + 1
-        h['CRPIX2'] = (h['CRPIX2'] - 1) * (h['NAXIS2'] - 1) / (naxis2 - 1) + 1
-        h['CDELT1'] /= scale1
-        h['CDELT2'] /= scale2
+        h["NAXIS1"] = int(np.ceil(naxis1 * scale))
+        h["NAXIS2"] = int(np.ceil(naxis2 * scale))
+        scale1 = h["NAXIS1"] / naxis1
+        scale2 = h["NAXIS2"] / naxis2
+        h["CRPIX1"] = (h["CRPIX1"] - 1) * (h["NAXIS1"] - 1) / (naxis1 - 1) + 1
+        h["CRPIX2"] = (h["CRPIX2"] - 1) * (h["NAXIS2"] - 1) / (naxis2 - 1) + 1
+        h["CDELT1"] /= scale1
+        h["CDELT2"] /= scale2
         self.reset_wcs(WCS(h))
-        self.set_xlim(-0.5, h['NAXIS1'] - 0.5)
-        self.set_ylim(-0.5, h['NAXIS2'] - 0.5)
+        self.set_xlim(-0.5, h["NAXIS1"] - 0.5)
+        self.set_ylim(-0.5, h["NAXIS2"] - 0.5)
         self._header = h
 
     @property
@@ -117,8 +155,9 @@ class AutoScaledWCSAxes(WCSAxes):
         -------
         patch : `matplotlib.patches.PathPatch`
         """
-        return self.add_patch(WCSInsetPatch(
-            ax, *args, transform=self.get_transform('world'), **kwargs))
+        return self.add_patch(
+            WCSInsetPatch(ax, *args, transform=self.get_transform("world"), **kwargs)
+        )
 
     def connect_inset_axes(self, ax, loc, *args, **kwargs):
         """Convenience function to connect a corner of another WCSAxes to the
@@ -143,8 +182,7 @@ class AutoScaledWCSAxes(WCSAxes):
         -------
         patch : `matplotlib.patches.ConnectionPatch`
         """
-        return self.add_patch(WCSInsetConnectionPatch(
-            self, ax, loc, *args, **kwargs))
+        return self.add_patch(WCSInsetConnectionPatch(self, ax, loc, *args, **kwargs))
 
     def compass(self, x, y, size):
         """Add a compass to indicate the north and east directions.
@@ -159,14 +197,21 @@ class AutoScaledWCSAxes(WCSAxes):
         xy = x, y
         scale = self.wcs.pixel_scale_matrix
         scale /= np.sqrt(np.abs(np.linalg.det(scale)))
-        return [self.annotate(label, xy, xy + size * n,
-                              self.transAxes, self.transAxes,
-                              ha='center', va='center',
-                              arrowprops=dict(arrowstyle='<-',
-                                              shrinkA=0.0, shrinkB=0.0))
-                for n, label, ha, va in zip(scale, 'EN',
-                                            ['right', 'center'],
-                                            ['center', 'bottom'])]
+        return [
+            self.annotate(
+                label,
+                xy,
+                xy + size * n,
+                self.transAxes,
+                self.transAxes,
+                ha="center",
+                va="center",
+                arrowprops=dict(arrowstyle="<-", shrinkA=0.0, shrinkB=0.0),
+            )
+            for n, label, ha, va in zip(
+                scale, "EN", ["right", "center"], ["center", "bottom"]
+            )
+        ]
 
     def scalebar(self, *args, **kwargs):
         """Add scale bar.
@@ -191,13 +236,14 @@ class AutoScaledWCSAxes(WCSAxes):
         """
         return self.add_patch(ScaleBar(self, *args, **kwargs))
 
-    def _reproject_hpx(self, data, hdu_in=None, order='bilinear',
-                       nested=False, field=0, smooth=None):
+    def _reproject_hpx(
+        self, data, hdu_in=None, order="bilinear", nested=False, field=0, smooth=None
+    ):
         if isinstance(data, np.ndarray):
-            data = (data, self.header['RADESYS'])
-        img, mask = reproject_from_healpix(data, self.header, hdu_in=hdu_in,
-                                           order=order, nested=nested,
-                                           field=field)
+            data = (data, self.header["RADESYS"])
+        img, mask = reproject_from_healpix(
+            data, self.header, hdu_in=hdu_in, order=order, nested=nested, field=field
+        )
         img = np.ma.array(img, mask=~mask.astype(bool))
         if smooth is not None:
             pixsize = np.mean(np.abs(self.wcs.wcs.cdelt)) * u.deg
@@ -205,8 +251,16 @@ class AutoScaledWCSAxes(WCSAxes):
             img = gaussian_filter(img, smooth)
         return img
 
-    def contour_hpx(self, data, hdu_in=None, order='bilinear', nested=False,
-                    field=0, smooth=None, **kwargs):
+    def contour_hpx(
+        self,
+        data,
+        hdu_in=None,
+        order="bilinear",
+        nested=False,
+        field=0,
+        smooth=None,
+        **kwargs
+    ):
         """Add contour levels for a HEALPix data set.
 
         Parameters
@@ -230,12 +284,21 @@ class AutoScaledWCSAxes(WCSAxes):
         -------
         countours : `matplotlib.contour.QuadContourSet`
         """  # noqa: E501
-        img = self._reproject_hpx(data, hdu_in=hdu_in, order=order,
-                                  nested=nested, field=field, smooth=smooth)
+        img = self._reproject_hpx(
+            data, hdu_in=hdu_in, order=order, nested=nested, field=field, smooth=smooth
+        )
         return self.contour(img, **kwargs)
 
-    def contourf_hpx(self, data, hdu_in=None, order='bilinear', nested=False,
-                     field=0, smooth=None, **kwargs):
+    def contourf_hpx(
+        self,
+        data,
+        hdu_in=None,
+        order="bilinear",
+        nested=False,
+        field=0,
+        smooth=None,
+        **kwargs
+    ):
         """Add filled contour levels for a HEALPix data set.
 
         Parameters
@@ -259,12 +322,21 @@ class AutoScaledWCSAxes(WCSAxes):
         -------
         contours : `matplotlib.contour.QuadContourSet`
         """  # noqa: E501
-        img = self._reproject_hpx(data, hdu_in=hdu_in, order=order,
-                                  nested=nested, field=field, smooth=smooth)
+        img = self._reproject_hpx(
+            data, hdu_in=hdu_in, order=order, nested=nested, field=field, smooth=smooth
+        )
         return self.contourf(img, **kwargs)
 
-    def imshow_hpx(self, data, hdu_in=None, order='bilinear', nested=False,
-                   field=0, smooth=None, **kwargs):
+    def imshow_hpx(
+        self,
+        data,
+        hdu_in=None,
+        order="bilinear",
+        nested=False,
+        field=0,
+        smooth=None,
+        **kwargs
+    ):
         """Add an image for a HEALPix data set.
 
         Parameters
@@ -288,56 +360,60 @@ class AutoScaledWCSAxes(WCSAxes):
         -------
         image : `matplotlib.image.AxesImage`
         """  # noqa: E501
-        img = self._reproject_hpx(data, hdu_in=hdu_in, order=order,
-                                  nested=nested, field=field, smooth=smooth)
+        img = self._reproject_hpx(
+            data, hdu_in=hdu_in, order=order, nested=nested, field=field, smooth=smooth
+        )
         return self.imshow(img, **kwargs)
 
 
 class GlobeAxes(AutoScaledWCSAxes):
 
-    name = 'astro globe'
+    name = "astro globe"
 
     def __init__(self, *args, **kwargs):
         kwargs = dict(kwargs)
-        center = SkyCoord(kwargs.pop('center', '0d 0d')).icrs
+        center = SkyCoord(kwargs.pop("center", "0d 0d")).icrs
         header = {
-            'NAXIS': 2,
-            'NAXIS1': 180,
-            'NAXIS2': 180,
-            'CRPIX1': 90.5,
-            'CRPIX2': 90.5,
-            'CRVAL1': center.ra.deg,
-            'CRVAL2': center.dec.deg,
-            'CDELT1': -2 / np.pi,
-            'CDELT2': 2 / np.pi,
-            'CTYPE1': 'RA---SIN',
-            'CTYPE2': 'DEC--SIN',
-            'RADESYS': 'ICRS'}
+            "NAXIS": 2,
+            "NAXIS1": 180,
+            "NAXIS2": 180,
+            "CRPIX1": 90.5,
+            "CRPIX2": 90.5,
+            "CRVAL1": center.ra.deg,
+            "CRVAL2": center.dec.deg,
+            "CDELT1": -2 / np.pi,
+            "CDELT2": 2 / np.pi,
+            "CTYPE1": "RA---SIN",
+            "CTYPE2": "DEC--SIN",
+            "RADESYS": "ICRS",
+        }
         super(GlobeAxes, self).__init__(
-            header, *args, frame_class=EllipticalFrame, **kwargs)
+            header, *args, frame_class=EllipticalFrame, **kwargs
+        )
 
 
 class ZoomSkyAxes(AutoScaledWCSAxes):
 
-    name = 'astro zoom'
+    name = "astro zoom"
 
     def __init__(self, *args, **kwargs):
         kwargs = dict(kwargs)
-        center = SkyCoord(kwargs.pop('center', '0d 0d')).icrs
-        radius = u.Quantity(kwargs.pop('radius', '1 deg')).to(u.deg).value
+        center = SkyCoord(kwargs.pop("center", "0d 0d")).icrs
+        radius = u.Quantity(kwargs.pop("radius", "1 deg")).to(u.deg).value
         header = {
-            'NAXIS': 2,
-            'NAXIS1': 512,
-            'NAXIS2': 512,
-            'CRPIX1': 256.5,
-            'CRPIX2': 256.5,
-            'CRVAL1': center.ra.deg,
-            'CRVAL2': center.dec.deg,
-            'CDELT1': -radius / 256,
-            'CDELT2': radius / 256,
-            'CTYPE1': 'RA---TAN',
-            'CTYPE2': 'DEC--TAN',
-            'RADESYS': 'ICRS'}
+            "NAXIS": 2,
+            "NAXIS1": 512,
+            "NAXIS2": 512,
+            "CRPIX1": 256.5,
+            "CRPIX2": 256.5,
+            "CRVAL1": center.ra.deg,
+            "CRVAL2": center.dec.deg,
+            "CDELT1": -radius / 256,
+            "CDELT2": radius / 256,
+            "CTYPE1": "RA---TAN",
+            "CTYPE2": "DEC--TAN",
+            "RADESYS": "ICRS",
+        }
         super(ZoomSkyAxes, self).__init__(header, *args, **kwargs)
 
 
@@ -346,24 +422,26 @@ class AllSkyAxes(AutoScaledWCSAxes):
 
     def __init__(self, *args, **kwargs):
         kwargs = dict(kwargs)
-        obstime = kwargs.pop('obstime', None)
+        obstime = kwargs.pop("obstime", None)
         header = {
-            'NAXIS': 2,
-            'NAXIS1': 360,
-            'NAXIS2': 180,
-            'CRPIX1': 180.5,
-            'CRPIX2': 90.5,
-            'CRVAL1': self._crval1,
-            'CRVAL2': 0.0,
-            'CDELT1': -2 * np.sqrt(2) / np.pi,
-            'CDELT2': 2 * np.sqrt(2) / np.pi,
-            'CTYPE1': self._xcoord + '-' + self._wcsprj,
-            'CTYPE2': self._ycoord + '-' + self._wcsprj,
-            'RADESYS': self._radesys}
+            "NAXIS": 2,
+            "NAXIS1": 360,
+            "NAXIS2": 180,
+            "CRPIX1": 180.5,
+            "CRPIX2": 90.5,
+            "CRVAL1": self._crval1,
+            "CRVAL2": 0.0,
+            "CDELT1": -2 * np.sqrt(2) / np.pi,
+            "CDELT2": 2 * np.sqrt(2) / np.pi,
+            "CTYPE1": self._xcoord + "-" + self._wcsprj,
+            "CTYPE2": self._ycoord + "-" + self._wcsprj,
+            "RADESYS": self._radesys,
+        }
         if obstime is not None:
-            header['DATE-OBS'] = Time(obstime).utc.isot
+            header["DATE-OBS"] = Time(obstime).utc.isot
         super(AllSkyAxes, self).__init__(
-            header, *args, frame_class=EllipticalFrame, **kwargs)
+            header, *args, frame_class=EllipticalFrame, **kwargs
+        )
         self.coords[0].set_ticks(spacing=45 * u.deg)
         self.coords[1].set_ticks(spacing=30 * u.deg)
         self.coords[0].set_ticklabel(exclude_overlapping=True)
@@ -372,33 +450,31 @@ class AllSkyAxes(AutoScaledWCSAxes):
 
 class Astro(object):
     _crval1 = 180
-    _xcoord = 'RA--'
-    _ycoord = 'DEC-'
-    _radesys = 'ICRS'
+    _xcoord = "RA--"
+    _ycoord = "DEC-"
+    _radesys = "ICRS"
 
 
 class GeoAngleFormatterLocator(AngleFormatterLocator):
-
     def formatter(self, values, spacing):
         return super(GeoAngleFormatterLocator, self).formatter(
-            reference_angle_deg(values.to(u.deg).value) * u.deg, spacing)
+            reference_angle_deg(values.to(u.deg).value) * u.deg, spacing
+        )
 
 
 class Geo(WCSAxes):
     _crval1 = 0
-    _radesys = 'ITRS'
-    _xcoord = 'TLON'
-    _ycoord = 'TLAT'
+    _radesys = "ITRS"
+    _xcoord = "TLON"
+    _ycoord = "TLAT"
 
     def __init__(self, *args, **kwargs):
         super(Geo, self).__init__(*args, **kwargs)
         self.invert_xaxis()
         fl = self.coords[0]._formatter_locator
         self.coords[0]._formatter_locator = GeoAngleFormatterLocator(
-            values=fl.values,
-            number=fl.number,
-            spacing=fl.spacing,
-            format=fl.format)
+            values=fl.values, number=fl.number, spacing=fl.spacing, format=fl.format
+        )
 
 
 class Degrees(WCSAxes):
@@ -406,7 +482,7 @@ class Degrees(WCSAxes):
 
     def __init__(self, *args, **kwargs):
         super(Degrees, self).__init__(*args, **kwargs)
-        self.coords[0].set_major_formatter('d')
+        self.coords[0].set_major_formatter("d")
 
 
 class Hours(WCSAxes):
@@ -414,47 +490,47 @@ class Hours(WCSAxes):
 
     def __init__(self, *args, **kwargs):
         super(Hours, self).__init__(*args, **kwargs)
-        self.coords[0].set_major_formatter('hh')
+        self.coords[0].set_major_formatter("hh")
 
 
 class Aitoff(object):
-    _wcsprj = 'AIT'
+    _wcsprj = "AIT"
 
 
 class Mollweide(object):
-    _wcsprj = 'MOL'
+    _wcsprj = "MOL"
 
 
 class AstroDegreesAitoffAllSkyAxes(Astro, Degrees, Aitoff, AllSkyAxes):
-    name = 'astro degrees aitoff'
+    name = "astro degrees aitoff"
 
 
 class AstroDegreesMollweideAllSkyAxes(Astro, Degrees, Mollweide, AllSkyAxes):
-    name = 'astro degrees mollweide'
+    name = "astro degrees mollweide"
 
 
 class AstroHoursAitoffAllSkyAxes(Astro, Hours, Aitoff, AllSkyAxes):
-    name = 'astro hours aitoff'
+    name = "astro hours aitoff"
 
 
 class AstroHoursMollweideAllSkyAxes(Astro, Hours, Mollweide, AllSkyAxes):
-    name = 'astro hours mollweide'
+    name = "astro hours mollweide"
 
 
 class GeoDegreesAitoffAllSkyAxes(Geo, Degrees, Aitoff, AllSkyAxes):
-    name = 'geo degrees aitoff'
+    name = "geo degrees aitoff"
 
 
 class GeoHoursAitoffAllSkyAxes(Geo, Hours, Aitoff, AllSkyAxes):
-    name = 'geo hours aitoff'
+    name = "geo hours aitoff"
 
 
 class GeoDegreesMollweideAllSkyAxes(Geo, Degrees, Mollweide, AllSkyAxes):
-    name = 'geo degrees mollweide'
+    name = "geo degrees mollweide"
 
 
 class GeoHoursMollweideAllSkyAxes(Geo, Hours, Mollweide, AllSkyAxes):
-    name = 'geo hours mollweide'
+    name = "geo hours mollweide"
 
 
 projection_registry.register(
@@ -467,11 +543,11 @@ projection_registry.register(
     GeoDegreesMollweideAllSkyAxes,
     GeoHoursMollweideAllSkyAxes,
     GlobeAxes,
-    ZoomSkyAxes)
+    ZoomSkyAxes,
+)
 
 
 class ScaleBar(FancyArrowPatch):
-
     def _func(self, dx, x, y):
         p1, p2 = self._transAxesToWorld.transform([[x, y], [x + dx, y]])
         p1 = SkyCoord(*p1, unit=u.deg)
@@ -483,24 +559,33 @@ class ScaleBar(FancyArrowPatch):
         self._ax = ax
         self._length = length
         self._transAxesToWorld = (
-            (ax.transAxes - ax.transData) + ax.coords.frame.transform)
+            ax.transAxes - ax.transData
+        ) + ax.coords.frame.transform
         dx = scipy.optimize.minimize_scalar(
-            self._func, args=xy, bounds=[0, 1 - x], method='bounded').x
+            self._func, args=xy, bounds=[0, 1 - x], method="bounded"
+        ).x
         super(ScaleBar, self).__init__(
-            xy, (x + dx, y),
+            xy,
+            (x + dx, y),
             *args,
-            arrowstyle='-',
-            capstyle='round',
-            color='black',
-            linewidth=rcParams['lines.linewidth'],
+            arrowstyle="-",
+            capstyle="round",
+            color="black",
+            linewidth=rcParams["lines.linewidth"],
             shrinkA=0.0,
             shrinkB=0.0,
             transform=ax.transAxes,
-            **kwargs)
+            **kwargs
+        )
 
     def label(self):
         (x0, y), (x1, _) = self._posA_posB
-        s = u' {0.value:g}{0.unit:unicode}'.format(self._length)
+        s = u" {0.value:g}{0.unit:unicode}".format(self._length)
         return self._ax.text(
-            0.5 * (x0 + x1), y, s,
-            ha='center', va='bottom', transform=self._ax.transAxes)
+            0.5 * (x0 + x1),
+            y,
+            s,
+            ha="center",
+            va="bottom",
+            transform=self._ax.transAxes,
+        )
