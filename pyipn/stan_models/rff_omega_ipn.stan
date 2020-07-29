@@ -40,8 +40,9 @@ parameters {
   vector[N_detectors]  log_bkg;
   vector[N_detectors] log_amplitude; // independent amplitude1 of LC 1; probably do not need right now...
 
-  real log_scale;
-  real log_bw;
+  vector[2] log_scale;
+  ordered[2] log_bw;
+
 
   unit_vector[3] grb_xyz; // GRB cartesian location
 
@@ -53,8 +54,9 @@ transformed parameters {
   vector[N_detectors] bkg = exp(log_bkg);
   vector[N_detectors] amplitude = exp(log_amplitude);
 
-  real scale = exp(log_scale) * inv_sqrt(k);
-  real bw = exp(log_bw);
+  vector[2] scale = exp(log_scale) * inv_sqrt(k);
+  vector[2] bw = exp(log_bw);
+  
 
 
   vector[N_detectors-1] dt;
@@ -79,35 +81,47 @@ model {
   beta1 ~ std_normal();
   beta2 ~ std_normal();
 
-  log_scale ~ std_normal();
+  log_scale ~ normal(0,2);
 
-  log_bkg ~ normal(log(50), 1);
-  log_bw ~ normal(0, .5);
+  log_bkg ~ normal(log(500), log(100));
+  log_bw ~ std_normal();
+  
 
-  omega[1] ~ normal(0, bw);
-  omega[2] ~ normal(0, bw);
+  omega[1] ~ normal(0, bw[1]);
+  omega[2] ~ normal(0, bw[2]);
   
 
 
   log_amplitude ~ std_normal();
 
+  /* target += reduce_sum(partial_log_like_bw, counts[1], grainsize, */
+  /*                      time[1], exposure[1], */
+  /*                      omega[1], omega[2], beta1, beta2, */
+  /*                      0., bkg[1], scale, amplitude[1]); */
 
 
-  //  log_duration ~ normal(1,.2);
-  //tstart ~ normal(1,5);
+  /* for (n in 2:N_detectors) { */
 
-  target += reduce_sum(partial_log_like_bw, counts[1], grainsize,
+  /*   target += reduce_sum(partial_log_like_bw, counts[n,:N_time_bins[n]], grainsize, */
+  /*                        time[n,:N_time_bins[n]], exposure[n,:N_time_bins[n]], */
+  /*                        omega[1], omega[2], beta1, beta2, */
+  /*                        dt[n-1], bkg[n], scale, amplitude[n]); */
+
+  /* } */
+
+
+  target += reduce_sum(partial_log_like_bw_multi_scale, counts[1], grainsize,
                        time[1], exposure[1],
                        omega[1], omega[2], beta1, beta2,
-                       0., bkg[1], scale, amplitude[1]);
+                       0., bkg[1], scale[1], scale[2], amplitude[1]);
 
 
   for (n in 2:N_detectors) {
 
-    target += reduce_sum(partial_log_like_bw, counts[n,:N_time_bins[n]], grainsize,
+    target += reduce_sum(partial_log_like_bw_multi_scale, counts[n,:N_time_bins[n]], grainsize,
                          time[n,:N_time_bins[n]], exposure[n,:N_time_bins[n]],
                          omega[1], omega[2], beta1, beta2,
-                         dt[n-1], bkg[n], scale, amplitude[n]);
+                         dt[n-1], bkg[n], scale[1], scale[2], amplitude[n]);
 
   }
 
