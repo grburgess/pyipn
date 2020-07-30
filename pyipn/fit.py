@@ -348,13 +348,21 @@ class Fit(object):
         center=None,
         radius=None,
         show_grb=True,
+            ax=None,
         **kwargs
     ):
 
-        skw_dict = create_skw_dict(projection, center, radius)
+        if ax is None:
 
-        fig, ax = plt.subplots(subplot_kw=skw_dict)
+            skw_dict = create_skw_dict(projection, center, radius)
 
+            fig, ax = plt.subplots(subplot_kw=skw_dict)
+
+        else:
+
+            fig = ax.get_figure()
+
+        
         theta = np.rad2deg(self._grb_theta)
         phi = np.rad2deg(self._grb_phi)
 
