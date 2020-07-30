@@ -2,19 +2,30 @@ import arviz as av
 import numpy as np
 import numba as nb
 import matplotlib.pyplot as plt
+from matplotlib.path import Path
+from matplotlib.patches import PathPatch
 import astropy.units as u
+
+import ligo.skymap.plot
+from ligo.skymap.plot import reticle
+from ligo.skymap.kde import Clustered2DSkyKDE
+import astropy_healpix as ah
+from astropy.wcs.utils import skycoord_to_pixel
+from mocpy import MOC
 
 from pyipn.rff import RFF, RFF_multiscale
 from .utils.timing import compute_annulus_from_time_delay
-from .io.plotting.projection import *
+
 from .io.plotting.projection import create_skw_dict
-from .io.plotting.markers import reticle
+from .universe import Universe
 
 
 class Fit(object):
-    def __init__(self, inference_data, universe_save=None):
+    def __init__(self, inference_data, universe_save=None, npix=2**5):
 
         self._posterior = inference_data
+
+        self._npix = npix
 
         self._beta1 = inference_data.posterior.beta1.stack(
             sample=("chain", "draw")
@@ -121,8 +132,43 @@ class Fit(object):
 
         self.grb_color = "#06DC94"
         self._grb_style = "lrtb"
-        self._has_universe = False
 
+        self._has_universe = False
+        
+        if universe_save is not None:
+
+            self._universe = Universe.from_save_file(universe_save)
+            
+            self._has_universe = True
+            
+
+            
+
+
+        
+
+        self._build_moc_map()
+
+ 
+            
+    def _build_moc_map(self):
+
+        pts =np.column_stack( (self._grb_phi, self._grb_theta ))
+
+        self._kde_map = Clustered2DSkyKDE(pts,jobs=12)
+
+        data = self._kde_map.as_healpix(top_nside=self._npix)
+
+        self._uniq=data['UNIQ']
+        self._prob_density=data['PROBDENSITY']
+
+        level, ipix = ah.uniq_to_level_ipix(self._uniq)
+        area = ah.nside_to_pixel_area(ah.level_to_nside(level)).to_value(u.steradian)
+        self._prob = self._prob_density * area
+
+        
+            
+        
     def _detector_check(self, det_number):
 
         assert det_number in range(self._n_dets)
@@ -225,6 +271,27 @@ class Fit(object):
                 dt1*u.s, dt2*u.s, d1, d2, color=colors[i], ax=ax, **kwargs
             )
 
+    
+    def _contour_more_detectors(
+        self, levels=[0.68], colors=["green"], ax=None, **kwargs
+    ):
+
+        assert len(levels) == len(colors)
+
+        mocs = [MOC.from_valued_healpix_cells(self._uniq, self._prob, cumul_to=c) for c in levels]
+
+        for moc,col in zip(mocs, colors[::-1]):
+            skycoords = moc.get_boundaries()
+
+            for sc in skycoords:
+
+                x, y = skycoord_to_pixel(sc, ax.wcs)
+                p = Path(np.vstack((x, y)).T)
+                patch = PathPatch(p, color=col, **kwargs)
+                ax.add_patch(patch)
+
+        
+            
     def _show_grb(self, ax):
 
         ax.plot(
@@ -263,6 +330,11 @@ class Fit(object):
 
             self._contour_two_detectors(levels, colors, ax=ax, **kwargs)
 
+        else:
+
+            self._contour_more_detectors(levels, colors, ax=ax, **kwargs)
+            
+            
         if show_grb and self._has_universe:
 
             self._show_grb(ax)
@@ -276,13 +348,21 @@ class Fit(object):
         center=None,
         radius=None,
         show_grb=True,
+            ax=None,
         **kwargs
     ):
 
-        skw_dict = create_skw_dict(projection, center, radius)
+        if ax is None:
 
-        fig, ax = plt.subplots(subplot_kw=skw_dict)
+            skw_dict = create_skw_dict(projection, center, radius)
 
+            fig, ax = plt.subplots(subplot_kw=skw_dict)
+
+        else:
+
+            fig = ax.get_figure()
+
+        
         theta = np.rad2deg(self._grb_theta)
         phi = np.rad2deg(self._grb_phi)
 
