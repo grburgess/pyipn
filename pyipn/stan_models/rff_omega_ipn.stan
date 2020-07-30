@@ -19,7 +19,7 @@ data {
 
   int<lower=1> k; // number of FFs
 
-  int grainsize;
+  int grainsize[N_detectors];
 
 
 
@@ -110,7 +110,7 @@ model {
   /* } */
 
 
-  target += reduce_sum(partial_log_like_bw_multi_scale, counts[1], grainsize,
+  target += reduce_sum(partial_log_like_bw_multi_scale, counts[1], grainsize[1],
                        time[1], exposure[1],
                        omega[1], omega[2], beta1, beta2,
                        0., bkg[1], scale[1], scale[2], amplitude[1]);
@@ -118,7 +118,7 @@ model {
 
   for (n in 2:N_detectors) {
 
-    target += reduce_sum(partial_log_like_bw_multi_scale, counts[n,:N_time_bins[n]], grainsize,
+    target += reduce_sum(partial_log_like_bw_multi_scale, counts[n,:N_time_bins[n]], grainsize[n],
                          time[n,:N_time_bins[n]], exposure[n,:N_time_bins[n]],
                          omega[1], omega[2], beta1, beta2,
                          dt[n-1], bkg[n], scale[1], scale[2], amplitude[n]);
