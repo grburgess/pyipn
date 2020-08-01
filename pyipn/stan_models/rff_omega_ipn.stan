@@ -32,7 +32,7 @@ parameters {
   vector[k] beta1; // the amplitude along the cos basis
   vector[k] beta2; // the amplitude along the sin basis
 
-  row_vector[k] omega[2]; // this weird MC integration thing.
+  row_vector[k] omega_var[2]; // this weird MC integration thing.
   
 
 
@@ -41,6 +41,7 @@ parameters {
   vector[N_detectors] log_amplitude; // independent amplitude1 of LC 1; probably do not need right now...
 
   vector[2] log_scale;
+  //positive_ordered[2] bw;
   ordered[2] log_bw;
 
 
@@ -58,9 +59,16 @@ transformed parameters {
   vector[2] bw = exp(log_bw);
   
 
+  row_vector[k] omega[2]; // this weird MC integration thing.
+  
+  
 
   vector[N_detectors-1] dt;
 
+  // non-center
+  omega[1] = omega_var[1] * bw[1];
+  omega[2] = omega_var[2] * bw[2];
+  
   // compute all time delays relative to the first
   // detector
 
@@ -81,14 +89,21 @@ model {
   beta1 ~ std_normal();
   beta2 ~ std_normal();
 
-  log_scale ~ normal(0,2);
+  log_scale ~ normal(0,1);
 
   log_bkg ~ normal(log(500), log(100));
   log_bw ~ std_normal();
+
+  //bw ~ cauchy(0, 2.5);
   
 
-  omega[1] ~ normal(0, bw[1]);
-  omega[2] ~ normal(0, bw[2]);
+  /* omega[1] ~ normal(0, bw[1]); */
+  /* omega[2] ~ normal(0, bw[2]); */
+  
+
+  omega_var[1] ~ std_normal();
+  omega_var[2] ~ std_normal();
+
   
 
 
