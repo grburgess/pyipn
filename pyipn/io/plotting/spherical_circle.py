@@ -73,9 +73,7 @@ class SphericalCircle(PathPatch):
                 codes.append(Path.LINETO)
             last = v[0]
 
-        circle_path = Path(vertices,
-                           codes
-        )
+        circle_path = Path(vertices, codes)
 
         super().__init__(circle_path, **kwargs)
 

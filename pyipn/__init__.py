@@ -11,7 +11,6 @@ from .possion_gen import pulse
 import ligo.skymap.plot
 
 
-
 __all__ = ["Universe", "copy_template"]
 
 from ._version import get_versions
