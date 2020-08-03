@@ -5,7 +5,7 @@
 
 from .universe import Universe
 from .fit import Fit
-from .stan_models import get_stan_model, plot_stan_fit
+from .stan_models import get_stan_model, plot_stan_fit, list_stan_models
 from .io.package_utils import copy_template
 from .possion_gen import pulse
 import ligo.skymap.plot
