@@ -53,7 +53,7 @@ parameters {
 transformed parameters {
 
   vector[N_detectors] bkg = exp(log_bkg);
-  vector[N_detectors] amplitude = exp(log_amplitude);
+  vector[N_detectors-1] amplitude = exp(log_amplitude);
 
   vector[2] scale = exp(log_scale) * inv_sqrt(k);
   vector[2] bw = exp(log_bw);
@@ -89,24 +89,17 @@ model {
   beta1 ~ std_normal();
   beta2 ~ std_normal();
 
-  log_scale ~ normal(0,1);
+  log_scale ~ std_normal();
 
-  log_bkg ~ normal(log(500), log(100));
   log_bw ~ std_normal();
 
   //bw ~ cauchy(0, 2.5);
-  
-
-  /* omega[1] ~ normal(0, bw[1]); */
-  /* omega[2] ~ normal(0, bw[2]); */
-  
 
   omega_var[1] ~ std_normal();
   omega_var[2] ~ std_normal();
 
-  
 
-
+  log_bkg ~ normal(log(500), log(100));  
   log_amplitude ~ std_normal();
 
   /* target += reduce_sum(partial_log_like_bw, counts[1], grainsize, */
@@ -128,7 +121,7 @@ model {
   target += reduce_sum(partial_log_like_bw_multi_scale, counts[1], grainsize[1],
                        time[1], exposure[1],
                        omega[1], omega[2], beta1, beta2,
-                       0., bkg[1], scale[1], scale[2], amplitude[1]);
+                       0., bkg[1], scale[1], scale[2], 1);
 
 
   for (n in 2:N_detectors) {
@@ -136,7 +129,7 @@ model {
     target += reduce_sum(partial_log_like_bw_multi_scale, counts[n,:N_time_bins[n]], grainsize[n],
                          time[n,:N_time_bins[n]], exposure[n,:N_time_bins[n]],
                          omega[1], omega[2], beta1, beta2,
-                         dt[n-1], bkg[n], scale[1], scale[2], amplitude[n]);
+                         dt[n-1], bkg[n], scale[1], scale[2], amplitude[n-1]);
 
   }
 
