@@ -359,7 +359,7 @@ class Universe(object):
 
             ipv.plot(xyz[:, 0], xyz[:, 1], xyz[:, 2], **kwargs)
 
-    def to_stan_data(self, tstart, tstop, dt=0.2, k=50, n_cores=1, factor=.5):
+    def to_stan_data(self, tstart, tstop, dt=0.2, k=50, n_cores=1, factor=0.5):
 
         n_dets = len(self._detectors)
 
@@ -411,8 +411,8 @@ class Universe(object):
         grainsize = []
         for n in n_time_bins:
 
-            grainsize.append(int(np.round(n/n_cores) * factor ))
-            #grainsize.append(1)
+            grainsize.append(int(np.round(n / n_cores) * factor))
+            # grainsize.append(1)
 
         data = dict(
             N_detectors=n_dets,

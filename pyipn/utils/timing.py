@@ -13,7 +13,14 @@ from pyipn.geometry import Location
 
 def theta_from_time_delay(dt, distance):
 
-    return np.arccos(np.around(((const.c * dt).to("km") / distance.to("km")).to(u.dimensionless_unscaled ).value, 15))
+    return np.arccos(
+        np.around(
+            ((const.c * dt).to("km") / distance.to("km"))
+            .to(u.dimensionless_unscaled)
+            .value,
+            15,
+        )
+    )
 
 
 def calculate_distance_and_norm(d1, d2):
@@ -35,7 +42,7 @@ def calculate_distance_and_norm(d1, d2):
     norm_d = dcart.get_norm_vec(u.km)
     ra = dcart.coord.represent_as(UnitSphericalRepresentation).lon
     dec = dcart.coord.represent_as(UnitSphericalRepresentation).lat
-    distance = np.linalg.norm(dxyz).to('km')
+    distance = np.linalg.norm(dxyz).to("km")
 
     return distance, norm_d, ra, dec
 
@@ -63,7 +70,7 @@ def compute_annulus_from_time_delay(
 
     thetas = []
 
-    time_delays =[dt1, dt2]
+    time_delays = [dt1, dt2]
 
     for dt in time_delays:
 
@@ -72,8 +79,6 @@ def compute_annulus_from_time_delay(
         thetas.append(theta)
 
     thetas = np.array(thetas)
-
-
 
     circle1 = SphericalCircle(
         np.array([ra.value, dec.value]) * ra.unit,

@@ -21,7 +21,7 @@ from .universe import Universe
 
 
 class Fit(object):
-    def __init__(self, inference_data, universe_save=None, npix=2**5):
+    def __init__(self, inference_data, universe_save=None, npix=2 ** 5):
 
         self._posterior = inference_data
 
@@ -30,6 +30,11 @@ class Fit(object):
         self._beta1 = inference_data.posterior.beta1.stack(
             sample=("chain", "draw")
         ).values
+
+        # set the number of samples.. flattened over chain
+
+        self._n_samples = self._beta1.shape[-1]
+
         self._beta2 = inference_data.posterior.beta2.stack(
             sample=("chain", "draw")
         ).values
@@ -42,9 +47,15 @@ class Fit(object):
             sample=("chain", "draw")
         ).values[1]
 
-        self._amplitude = inference_data.posterior.amplitude.stack(
-            sample=("chain", "draw")
-        ).values
+        try:
+
+            self._amplitude = inference_data.posterior.amplitude.stack(
+                sample=("chain", "draw")
+            ).values
+
+        except:
+
+            self._amplitude = np.ones(self._n_samples)
 
         self._background = inference_data.posterior.bkg.stack(
             sample=("chain", "draw")
@@ -89,8 +100,6 @@ class Fit(object):
 
             self._n_dets = 1
 
-        self._n_samples = self._beta1.shape[-1]
-
         self._use_bw = False
 
         try:
@@ -134,41 +143,32 @@ class Fit(object):
         self._grb_style = "lrtb"
 
         self._has_universe = False
-        
+
         if universe_save is not None:
 
             self._universe = Universe.from_save_file(universe_save)
-            
+
             self._has_universe = True
-            
 
-            
+        if self._is_dt_fit:
 
+            self._build_moc_map()
 
-        
-
-        self._build_moc_map()
-
- 
-            
     def _build_moc_map(self):
 
-        pts =np.column_stack( (self._grb_phi, self._grb_theta ))
+        pts = np.column_stack((self._grb_phi, self._grb_theta))
 
-        self._kde_map = Clustered2DSkyKDE(pts,jobs=12)
+        self._kde_map = Clustered2DSkyKDE(pts, jobs=12)
 
         data = self._kde_map.as_healpix(top_nside=self._npix)
 
-        self._uniq=data['UNIQ']
-        self._prob_density=data['PROBDENSITY']
+        self._uniq = data["UNIQ"]
+        self._prob_density = data["PROBDENSITY"]
 
         level, ipix = ah.uniq_to_level_ipix(self._uniq)
         area = ah.nside_to_pixel_area(ah.level_to_nside(level)).to_value(u.steradian)
         self._prob = self._prob_density * area
 
-        
-            
-        
     def _detector_check(self, det_number):
 
         assert det_number in range(self._n_dets)
@@ -208,9 +208,13 @@ class Fit(object):
 
             amp = self._amplitude
 
+        elif detector == 0:
+
+            amp = np.ones(self._n_samples)
+
         else:
 
-            amp = self._amplitude[detector]
+            amp = self._amplitude[detector - 1]
 
         if self._use_bw:
 
@@ -268,19 +272,21 @@ class Fit(object):
             dt1, dt2 = av.hdi(dt, hdi_prob=level)
 
             compute_annulus_from_time_delay(
-                dt1*u.s, dt2*u.s, d1, d2, color=colors[i], ax=ax, **kwargs
+                dt1 * u.s, dt2 * u.s, d1, d2, color=colors[i], ax=ax, **kwargs
             )
 
-    
     def _contour_more_detectors(
         self, levels=[0.68], colors=["green"], ax=None, **kwargs
     ):
 
         assert len(levels) == len(colors)
 
-        mocs = [MOC.from_valued_healpix_cells(self._uniq, self._prob, cumul_to=c) for c in levels]
+        mocs = [
+            MOC.from_valued_healpix_cells(self._uniq, self._prob, cumul_to=c)
+            for c in levels
+        ]
 
-        for moc,col in zip(mocs, colors[::-1]):
+        for moc, col in zip(mocs, colors[::-1]):
             skycoords = moc.get_boundaries()
 
             for sc in skycoords:
@@ -290,8 +296,6 @@ class Fit(object):
                 patch = PathPatch(p, color=col, **kwargs)
                 ax.add_patch(patch)
 
-        
-            
     def _show_grb(self, ax):
 
         ax.plot(
@@ -333,8 +337,7 @@ class Fit(object):
         else:
 
             self._contour_more_detectors(levels, colors, ax=ax, **kwargs)
-            
-            
+
         if show_grb and self._has_universe:
 
             self._show_grb(ax)
@@ -348,7 +351,7 @@ class Fit(object):
         center=None,
         radius=None,
         show_grb=True,
-            ax=None,
+        ax=None,
         **kwargs
     ):
 
@@ -362,7 +365,6 @@ class Fit(object):
 
             fig = ax.get_figure()
 
-        
         theta = np.rad2deg(self._grb_theta)
         phi = np.rad2deg(self._grb_phi)
 

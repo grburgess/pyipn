@@ -11,7 +11,7 @@ def norris(x, K, t_start, t_rise, t_decay):
     if x > t_start:
         return (
             K
-            * np.exp(2. * np.sqrt(t_rise / t_decay))
+            * np.exp(2.0 * np.sqrt(t_rise / t_decay))
             * np.exp((-t_rise / (x - t_start)) - (x - t_start) / t_decay)
         )
     else:
