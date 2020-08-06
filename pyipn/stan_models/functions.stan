@@ -12,7 +12,7 @@ real partial_log_like(int[] counts_slice, int start, int end, vector time, vecto
   expected_counts = exposure[start:end] .* (exp(scale * expected_counts_log) * amplitude + bkg);
 
 
-  return poisson_lpmf(counts_slice | expected_counts);
+  return poisson_propto_lpmf(counts_slice | expected_counts);
 
 }
 
@@ -33,7 +33,7 @@ real partial_log_like_bw(int[] counts_slice, int start, int end, vector time, ve
   expected_counts = exposure[start:end] .* (exp(scale * expected_counts_log) * amplitude + bkg);
 
 
-  return poisson_lpmf(counts_slice | expected_counts);
+  return poisson_propto_lpmf(counts_slice | expected_counts);
 
 }
 
@@ -54,7 +54,40 @@ real partial_log_like_bw_multi_scale(int[] counts_slice, int start, int end, vec
   expected_counts = exposure[start:end] .* (exp(expected_counts_log) * amplitude + bkg);
 
 
-  return poisson_lpmf(counts_slice | expected_counts);
+  return poisson_propto_lpmf(counts_slice | expected_counts);
+
+}
+
+
+
+real partial_log_like_bw_multi_scale_log(int[] counts_slice, int start, int end, vector time, vector log_exposure, row_vector omega1, row_vector omega2, vector beta1, vector beta2, real dt, real log_bkg, real scale1, real scale2, real log_amplitude, int k) {
+
+  int N = size(counts_slice);
+
+  vector[N] time_slice = time[start:end] - dt;
+  vector[N] expected_rate_log;
+  vector[N] expected_counts_log;
+  vector[N] log_exposure_slice = log_exposure[start:end];
+  
+  
+  matrix [N,k] tw1 = time_slice * omega1;
+  matrix [N,k] tw2 = time_slice * omega2;
+
+  
+  expected_rate_log = ((scale1 * cos(tw1) + scale2 * cos(tw2)  ) * beta1) + ((scale1 * sin(tw1) + scale2 * sin(tw2)  ) * beta2);
+
+  /* expected_rate_log = ((scale1 * cos(time_slice * omega1) + scale2 * cos(time_slice * omega2)  ) * beta1) + ((scale1 * sin(time_slice * omega1) + scale2 * sin(time_slice * omega2)  ) * beta2); */
+
+
+  for (n in 1:N) {
+    
+    expected_counts_log[n] = log_sum_exp(expected_rate_log[n] + log_amplitude, log_bkg ) + log_exposure_slice[n];
+    
+  }
+  
+
+
+  return poisson_log_propto_lpmf(counts_slice | expected_counts_log);
 
 }
 
