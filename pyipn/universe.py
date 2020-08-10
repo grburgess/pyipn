@@ -372,7 +372,7 @@ class Universe(object):
 
         tstart = np.atleast_1d(tstart)
         tstop = np.atleast_1d(tstop)
-        dt = np.atleast_1d(det)
+        dt = np.atleast_1d(dt)
         
         for n, (det_nam, v) in enumerate(self._detectors.items()):
 
