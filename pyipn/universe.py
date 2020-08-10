@@ -370,9 +370,9 @@ class Universe(object):
 
         n_time_bins = []
 
-        tstart = np.at_least1d(tstart)
-        tstop = np.at_least1d(tstop)
-        dt = np.at_least1d(det)
+        tstart = np.atleast_1d(tstart)
+        tstop = np.atleast_1d(tstop)
+        dt = np.atleast_1d(det)
         
         for n, (det_nam, v) in enumerate(self._detectors.items()):
 
