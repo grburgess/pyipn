@@ -22,6 +22,15 @@ from .universe import Universe
 
 class Fit(object):
     def __init__(self, inference_data, universe_save=None, npix=2 ** 5):
+        """FIXME! briefly describe function
+
+        :param inference_data: 
+        :param universe_save: 
+        :param npix: 
+        :returns: we love 
+        :rtype: 
+
+        """
 
         self._posterior = inference_data
 
@@ -166,7 +175,8 @@ class Fit(object):
         self._prob_density = data["PROBDENSITY"]
 
         level, ipix = ah.uniq_to_level_ipix(self._uniq)
-        area = ah.nside_to_pixel_area(ah.level_to_nside(level)).to_value(u.steradian)
+        area = ah.nside_to_pixel_area(
+            ah.level_to_nside(level)).to_value(u.steradian)
         self._prob = self._prob_density * area
 
     def _detector_check(self, det_number):
@@ -193,6 +203,14 @@ class Fit(object):
         self._has_universe = True
 
     def expected_rate(self, time, detector):
+        """FIXME! briefly describe function
+
+        :param time: 
+        :param detector: 
+        :returns: 
+        :rtype: 
+
+        """
 
         self._detector_check(detector)
 
@@ -233,7 +251,7 @@ class Fit(object):
                 self._beta2,
                 bw,
                 self._scale,
-                self._amplitude[detector],
+                amp,
                 dt,
                 self._n_samples,
             )
@@ -247,7 +265,7 @@ class Fit(object):
                 self._beta2,
                 bw,
                 self._scale,
-                self._amplitude[detector],
+                amp,
                 dt,
                 self._n_samples,
             )
@@ -319,6 +337,19 @@ class Fit(object):
         show_grb=True,
         **kwargs
     ):
+        """FIXME! briefly describe function
+
+        :param levels: 
+        :param colors: 
+        :param ax: 
+        :param projection: 
+        :param center: 
+        :param radius: 
+        :param show_grb: 
+        :returns: 
+        :rtype: 
+
+        """
 
         if ax is None:
 

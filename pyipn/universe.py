@@ -370,10 +370,16 @@ class Universe(object):
 
         n_time_bins = []
 
+        tstart = np.at_least1d(tstart)
+        tstop = np.at_least1d(tstop)
+        dt = np.at_least1d(det)
+        
         for n, (det_nam, v) in enumerate(self._detectors.items()):
 
             lc = self._light_curves[det_nam]
-            _, t, c = lc.get_binned_light_curve(tstart, tstop, dt)
+
+            _, t, c = lc.get_binned_light_curve(tstart[n], tstop[n], dt[n])
+
             mid = np.mean([t[:-1], t[1:]], axis=0)
             e = t[1:] - t[:-1]
 
