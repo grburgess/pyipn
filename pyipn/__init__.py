@@ -11,7 +11,8 @@ from .possion_gen import pulse
 import ligo.skymap.plot
 
 
-__all__ = ["Universe", "copy_template"]
+__all__ = ["Universe", "copy_template", "Fit",
+           "get_stan_model", "list_stan_models"]
 
 from ._version import get_versions
 
