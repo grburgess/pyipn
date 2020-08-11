@@ -16,7 +16,7 @@ _available_models = [
 ]
 
 
-def get_stan_model(stan_model):
+def get_stan_model(stan_model, mpi=False, threads=True):
 
     assert (
         stan_model in _available_models
@@ -26,28 +26,39 @@ def get_stan_model(stan_model):
         "pyipn", os.path.join("stan_models", stan_model)
     )
 
+    cpp_options = {}
+
+    if mpi:
+        cpp_options["STAN_MPI"] = "TRUE"
+
+    if threads:
+
+        cpp_options["STAN_THREADS"] = "TRUE"
+
     model = cmdstanpy.CmdStanModel(
-        stan_file=stan_file, cpp_options={"STAN_THREADS": "TRUE"}
+        stan_file=stan_file, cpp_options=cpp_options
     )
 
     return model
 
 
-def plot_stan_fit(fit, universe, cmap="Set1", color="blue"):
+# def plot_stan_fit(fit, universe, cmap="Set1", color="blue"):
 
-    ar = arviz.from_cmdstanpy(fit)
+#     ar = arviz.from_cmdstanpy(fit)
 
-    raw_xyz = np.array(ar.posterior.grb_xyz).reshape(-1, ar.posterior.grb_xyz.shape[-1])
+#     raw_xyz = np.array(ar.posterior.grb_xyz).reshape(-1,
+#                                                      ar.posterior.grb_xyz.shape[-1])
 
-    rad = universe.grb_radius
+#     rad = universe.grb_radius
 
-    # scatter = rad + np.random.normal(0, rad * 0.05, size=len(raw_xyz))
+#     # scatter = rad + np.random.normal(0, rad * 0.05, size=len(raw_xyz))
 
-    universe.plot_all_annuli(cmap=cmap, lw=3, threeD=True)
+#     universe.plot_all_annuli(cmap=cmap, lw=3, threeD=True)
 
-    xyz = rad * raw_xyz
+#     xyz = rad * raw_xyz
 
-    ipv.scatter(xyz[:, 0], xyz[:, 1], xyz[:, 2], marker="sphere", color=color, size=0.7)
+#     ipv.scatter(xyz[:, 0], xyz[:, 1], xyz[:, 2],
+#                 marker="sphere", color=color, size=0.7)
 
 
 def list_stan_models():

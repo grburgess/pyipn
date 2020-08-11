@@ -320,9 +320,9 @@ class Fit(object):
             self._universe.grb.location.coord.ra.deg,
             self._universe.grb.location.coord.dec.deg,
             transform=ax.get_transform("icrs"),
-            marker=reticle(inner=0.4, which=self._grb_style),
-            markersize=30,
-            markeredgewidth=2,
+            marker=reticle(inner=0.3, which=self._grb_style),
+            markersize=20,
+            markeredgewidth=1,
             color=self.grb_color,
         )
 
@@ -497,7 +497,7 @@ class Fit(object):
 
             for i in range(len(edges) - 1):
                 ax.fill_between([edges[i], edges[i + 1]],
-                                lo[i], hi[i], color=colors[j])
+                                lo[i], hi[i], fc=colors[j], ec="none", lw=0)
 
         ax.scatter(mid_points, rate,**kwargs)
 
