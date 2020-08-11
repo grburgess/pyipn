@@ -24,11 +24,11 @@ class Fit(object):
     def __init__(self, inference_data, universe_save=None, npix=2 ** 5):
         """FIXME! briefly describe function
 
-        :param inference_data: 
-        :param universe_save: 
-        :param npix: 
-        :returns: we love 
-        :rtype: 
+        :param inference_data:
+        :param universe_save:
+        :param npix:
+        :returns: we love
+        :rtype:
 
         """
 
@@ -205,10 +205,10 @@ class Fit(object):
     def expected_rate(self, time, detector):
         """FIXME! briefly describe function
 
-        :param time: 
-        :param detector: 
-        :returns: 
-        :rtype: 
+        :param time:
+        :param detector:
+        :returns:
+        :rtype:
 
         """
 
@@ -339,15 +339,15 @@ class Fit(object):
     ):
         """FIXME! briefly describe function
 
-        :param levels: 
-        :param colors: 
-        :param ax: 
-        :param projection: 
-        :param center: 
-        :param radius: 
-        :param show_grb: 
-        :returns: 
-        :rtype: 
+        :param levels:
+        :param colors:
+        :param ax:
+        :param projection:
+        :param center:
+        :param radius:
+        :param show_grb:
+        :returns:
+        :rtype:
 
         """
 
@@ -412,7 +412,7 @@ class Fit(object):
 
         return fig
 
-    def plot_light_curve_fit(self, detector, tstart, tstop, dt=0.2, thin=1):
+    def plot_light_curve_fit(self, detector, tstart, tstop, dt=0.2, thin=1,color='r', **kwargs):
 
         self._detector_check(detector)
         assert self._has_universe
@@ -441,13 +441,96 @@ class Fit(object):
 
         for i in range(self._n_samples)[::thin]:
 
-            ax.plot(mid_points, pred_rate[i] + bkg[i], color="r", alpha=0.05)
+            ax.plot(mid_points, pred_rate[i] + bkg[i], color=color, alpha=0.05)
 
-        ax.scatter(mid_points, rate, fc="none", ec="k")
+        ax.scatter(mid_points, rate, **kwargs)
 
         ax.set(xlabel="time (s)", ylabel="rate (cnts/s)")
 
         return fig
+
+    def plot_light_curve_ppcs(self, detector, tstart, tstop, dt=0.2, levels=[99, 95, 68], colors=["r", "g", "b"], **kwargs):
+
+        self._detector_check(detector)
+        assert self._has_universe
+
+        lc = self._universe.light_curves[
+            list(self._universe.light_curves.keys())[detector]
+        ]
+
+        rate, edges, counts = lc.get_binned_light_curve(tstart, tstop, dt)
+
+        exposure = np.diff(edges)
+
+        mid_points = 0.5 * (edges[:-1] + edges[1:])
+
+        fig, ax = plt.subplots()
+
+
+
+        if self._is_dt_fit:
+
+            bkg = self._background[detector]
+
+        else:
+
+            bkg = self._background
+
+        # compute the PPC bounds
+
+        ppcs = self._compute_ppcs(detector, tstart, tstop, dt)
+        
+        ppc_low = []
+        ppc_high = []
+
+        for level in levels:
+
+            tmp_low = np.percentile(ppcs / exposure, 50. - level / 2., axis=0)
+            tmp_high = np.percentile(ppcs / exposure, 50. + level / 2., axis=0)
+
+            ppc_low.append(tmp_low)
+            ppc_high.append(tmp_high)
+
+        #colors = [light,mid,dark]
+
+        for j, (lo, hi) in enumerate(zip(ppc_low, ppc_high)):
+
+            for i in range(len(edges) - 1):
+                ax.fill_between([edges[i], edges[i + 1]],
+                                lo[i], hi[i], color=colors[j])
+
+        ax.scatter(mid_points, rate,**kwargs)
+
+        ax.set(xlabel="time (s)", ylabel="rate (cnts/s)")
+
+        return fig
+
+    def _compute_ppcs(self, detector, tstart, tstop, dt):
+
+        lc = self._universe.light_curves[
+            list(self._universe.light_curves.keys())[detector]
+        ]
+
+        rate, edges, counts = lc.get_binned_light_curve(tstart, tstop, dt)
+
+        mid_points = 0.5 * (edges[:-1] + edges[1:])
+
+        exposure = np.diff(edges)
+
+        pred_rate = self.expected_rate(mid_points, detector)
+
+        if self._is_dt_fit:
+
+            bkg = self._background[detector]
+
+        else:
+
+            bkg = self._background
+
+        
+        ppcs = ppc_generator(mid_points, exposure, pred_rate, bkg, self._n_samples)
+
+        return ppcs
 
     @property
     def beta1(self):
@@ -519,7 +602,7 @@ class Fit(object):
         return self._posterior
 
 
-@nb.njit()
+@nb.njit(fastmath=True, cache=True)
 def _expeced_rate(time, omega1, omega2, beta1, beta2, bw, scale, amplitude, dt, N):
 
     out = np.empty((N, len(time)))
@@ -539,7 +622,7 @@ def _expeced_rate(time, omega1, omega2, beta1, beta2, bw, scale, amplitude, dt, 
     return out
 
 
-@nb.njit()
+@nb.njit(fastmath=True, cache=True)
 def _expeced_rate_multiscale(
     time, omega1, omega2, beta1, beta2, bw, scale, amplitude, dt, N
 ):
@@ -558,5 +641,19 @@ def _expeced_rate_multiscale(
             scale[0, n],
             scale[1, n],
         )
+
+    return out
+
+
+@nb.njit(fastmath=True, cache=True)
+def ppc_generator(time, exposure, rates, bkg, N):
+
+    out = np.empty((N, len(time)))
+
+    for n in range(N):
+
+        for i in range(len(time)):
+
+            out[n, i] = np.random.poisson((rates[n, i] +bkg[n])* exposure[i])
 
     return out

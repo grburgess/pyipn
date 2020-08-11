@@ -370,6 +370,8 @@ class Universe(object):
 
         n_time_bins = []
 
+        # allow for variable time selections
+        
         tstart = np.atleast_1d(tstart)
         tstop = np.atleast_1d(tstop)
         dt = np.atleast_1d(dt)

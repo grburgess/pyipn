@@ -21,6 +21,9 @@ def find_data_files(directory):
 
 extra_files = find_data_files("pyipn/data")
 
+stan_files = [f for f in find_data_files("pyipn/stan_models") if ".stan" in f]
+
+extra_files.extend(stan_files)
 
 setup(
     version=versioneer.get_version(),

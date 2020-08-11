@@ -23,7 +23,7 @@ def get_stan_model(stan_model):
     ), f"{stan_model} is not in {','.join(_available_models)}"
 
     stan_file = pkg_resources.resource_filename(
-        "pyipn", os.path.join("stan_models", stan_model)
+        "pyipn", os.path.join("data", stan_model)
     )
 
     model = cmdstanpy.CmdStanModel(
