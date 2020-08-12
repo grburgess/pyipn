@@ -98,7 +98,7 @@ class Detector(object):
 
         return self._location.coord.separation(grb.location.coord)
 
-    def build_light_curve(self, grb, T0, tstart, tstop):
+    def build_light_curve(self, grb, T0, tstart, tstop, seed=1234):
         """
         Build the light curve observed from the GRB
 
@@ -137,6 +137,7 @@ class Detector(object):
 
             is_multi_pulse = False
 
+            
         if not is_multi_pulse:
 
             # scale the GRB by the effective area
@@ -146,8 +147,8 @@ class Detector(object):
             # compute the arrival times
 
             source_arrival_times = source_poisson_generator(
-                tstart, tstop, observed_intensity, T0, t_rise, t_decay
-            )
+                tstart, tstop, observed_intensity, T0, t_rise, t_decay,
+                seed)
 
         else:
 
@@ -163,11 +164,11 @@ class Detector(object):
             t_start += T0
 
             source_arrival_times = source_poisson_generator(
-                tstart, tstop, observed_intensity, t_start, t_rise, t_decay
+                tstart, tstop, observed_intensity, t_start, t_rise, t_decay, seed
             )
 
         bkg_arrival_times = background_poisson_generator(
-            tstart, tstop, self._background_slope, self._background_norm
+            tstart, tstop, self._background_slope, self._background_norm, seed+1
         )
 
         # return a light curve
