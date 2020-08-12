@@ -33,7 +33,7 @@ from .utils.timing import (
 
 
 class Universe(object):
-    def __init__(self, grb, yaml_dict=None, locked=False):
+    def __init__(self, grb, yaml_dict=None, locked=False, seed=1234):
         """FIXME! briefly describe function
 
         :param grb: 
@@ -42,6 +42,7 @@ class Universe(object):
 
         """
 
+        self._seed = seed
         self._detectors = collections.OrderedDict()
         self._grb = grb
 
@@ -173,6 +174,8 @@ class Universe(object):
 
         """
 
+        np.random.seed(self._seed)
+        
         self._light_curves = collections.OrderedDict()
 
         for t0, (name, detector) in zip(self._T0, self._detectors.items()):
@@ -200,6 +203,13 @@ class Universe(object):
 
         grb_params = d["grb"]
 
+        if "seed" in d:
+            seed = d["seed"]
+
+        else:
+
+            seed = 1234
+            
         if "t_start" in grb_params:
 
             t_start = grb_params["t_start"]
@@ -224,7 +234,7 @@ class Universe(object):
             t_start,
         )
 
-        universe = cls(grb, yaml_dict=d, locked=locked)
+        universe = cls(grb, yaml_dict=d, locked=locked, seed=seed)
 
         for name, value in d["detectors"].items():
 
