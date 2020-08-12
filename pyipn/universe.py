@@ -208,7 +208,7 @@ class Universe(object):
 
         else:
 
-            seed = 1234
+            seed = 12345
             
         if "t_start" in grb_params:
 
