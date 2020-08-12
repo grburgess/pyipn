@@ -173,16 +173,17 @@ class Universe(object):
         :rtype: 
 
         """
-
-        np.random.seed(self._seed)
         
         self._light_curves = collections.OrderedDict()
 
+        i = 0
         for t0, (name, detector) in zip(self._T0, self._detectors.items()):
 
             self._light_curves[name] = detector.build_light_curve(
-                self._grb, t0, tstart, tstop
+                self._grb, t0, tstart, tstop, seed=self._seed + i
             )
+
+            i+=10
 
     def write_to(self, file_name):
 

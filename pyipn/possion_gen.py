@@ -86,7 +86,7 @@ def pulse(x, K, t_start, t_rise, t_decay):
 
 
 @nb.njit(fastmath=True)
-def source_poisson_generator(tstart, tstop, K, p_start, t_rise, t_decay):
+def source_poisson_generator(tstart, tstop, K, p_start, t_rise, t_decay, seed=1234):
     """
     Non-homogeneous poisson process generator
     for a given max rate and time range, this function
@@ -94,6 +94,8 @@ def source_poisson_generator(tstart, tstop, K, p_start, t_rise, t_decay):
     lightcurve.
     """
 
+    np.random.seed(seed)
+    
     num_time_steps = 1000
 
     time_grid = np.linspace(tstart, tstop + 1.0, num_time_steps)
@@ -170,7 +172,7 @@ def source_poisson_generator(tstart, tstop, K, p_start, t_rise, t_decay):
 
 
 @nb.njit
-def background_poisson_generator(tstart, tstop, slope, intercept):
+def background_poisson_generator(tstart, tstop, slope, intercept, seed=1234):
     """
     Non-homogeneous poisson process generator
     for a given max rate and time range, this function
@@ -178,6 +180,8 @@ def background_poisson_generator(tstart, tstop, slope, intercept):
     lightcurve.
     """
 
+    np.random.seed(seed)
+    
     num_time_steps = 1000
 
     time_grid = np.linspace(tstart, tstop + 1.0, num_time_steps)
