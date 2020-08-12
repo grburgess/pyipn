@@ -29,11 +29,11 @@ def get_stan_model(stan_model, mpi=False, threads=True):
     cpp_options = {}
 
     if mpi:
-        cpp_options["STAN_MPI"] = "TRUE"
+        cpp_options["STAN_MPI"] = True
 
     if threads:
 
-        cpp_options["STAN_THREADS"] = "TRUE"
+        cpp_options["STAN_THREADS"] = True
 
     model = cmdstanpy.CmdStanModel(
         stan_file=stan_file, cpp_options=cpp_options
