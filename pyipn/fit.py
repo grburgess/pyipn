@@ -21,7 +21,7 @@ from .universe import Universe
 
 
 class Fit(object):
-    def __init__(self, inference_data, universe_save=None, npix=2 ** 5):
+    def __init__(self, *inference_data, universe_save=None, npix=2 ** 5):
         """FIXME! briefly describe function
 
         :param inference_data:
@@ -32,11 +32,24 @@ class Fit(object):
 
         """
 
-        self._posterior = inference_data
+
+        if len(inference_data) == 1:
+        
+            self._posterior = inference_data[0]
+
+        else:
+
+            self._posterior = inference_data[0]
+
+            for idata in inference_data[1:]:
+
+
+                self._posterior = av.concat(self._posterior, idata, dim="chain")
+            
 
         self._npix = npix
 
-        self._beta1 = inference_data.posterior.beta1.stack(
+        self._beta1 = self._posterior.posterior.beta1.stack(
             sample=("chain", "draw")
         ).values
 
@@ -44,21 +57,21 @@ class Fit(object):
 
         self._n_samples = self._beta1.shape[-1]
 
-        self._beta2 = inference_data.posterior.beta2.stack(
+        self._beta2 = self._posterior.posterior.beta2.stack(
             sample=("chain", "draw")
         ).values
 
-        self._omega1 = inference_data.posterior.omega.stack(
+        self._omega1 = self._posterior.posterior.omega.stack(
             sample=("chain", "draw")
         ).values[0]
 
-        self._omega2 = inference_data.posterior.omega.stack(
+        self._omega2 = self._posterior.posterior.omega.stack(
             sample=("chain", "draw")
         ).values[1]
 
         try:
 
-            self._amplitude = inference_data.posterior.amplitude.stack(
+            self._amplitude = self._posterior.posterior.amplitude.stack(
                 sample=("chain", "draw")
             ).values
 
@@ -66,11 +79,11 @@ class Fit(object):
 
             self._amplitude = np.ones(self._n_samples)
 
-        self._background = inference_data.posterior.bkg.stack(
+        self._background = self._posterior.posterior.bkg.stack(
             sample=("chain", "draw")
         ).values
 
-        self._scale = inference_data.posterior.scale.stack(
+        self._scale = self._posterior.posterior.scale.stack(
             sample=("chain", "draw")
         ).values
 
@@ -84,14 +97,14 @@ class Fit(object):
 
         try:
 
-            self._dt = inference_data.posterior.dt.stack(
+            self._dt = self._posterior.posterior.dt.stack(
                 sample=("chain", "draw")
             ).values
 
-            self._grb_theta = inference_data.posterior.grb_theta.stack(
+            self._grb_theta = self._posterior.posterior.grb_theta.stack(
                 sample=("chain", "draw")
             ).values
-            self._grb_phi = inference_data.posterior.grb_phi.stack(
+            self._grb_phi = self._posterior.posterior.grb_phi.stack(
                 sample=("chain", "draw")
             ).values
 
@@ -113,11 +126,11 @@ class Fit(object):
 
         try:
 
-            self._bw1 = inference_data.posterior.bw1.stack(
+            self._bw1 = self._posterior.posterior.bw1.stack(
                 sample=("chain", "draw")
             ).values
 
-            self._bw2 = inference_data.posterior.bw2.stack(
+            self._bw2 = self._posterior.posterior.bw2.stack(
                 sample=("chain", "draw")
             ).values
 
@@ -127,7 +140,7 @@ class Fit(object):
 
             try:
 
-                self._bw = inference_data.posterior.bw.stack(
+                self._bw = self._posterior.posterior.bw.stack(
                     sample=("chain", "draw")
                 ).values
 
@@ -141,7 +154,7 @@ class Fit(object):
 
             except:
 
-                self._bw = inference_data.posterior.bw_out.stack(
+                self._bw = self._posterior.posterior.bw_out.stack(
                     sample=("chain", "draw")
                 ).values
 
@@ -191,11 +204,17 @@ class Fit(object):
         return cls(inference_data)
 
     @classmethod
-    def from_netcdf(cls, file_name):
+    def from_netcdf(cls, *file_name):
 
-        inference_data = av.from_netcdf(file_name)
+        if len(file_name) == 1:
+        
+            inference_data = [av.from_netcdf(file_name)]
 
-        return cls(inference_data)
+        else:
+
+            inference_data = [av.from_netcdf(f) for f in file_name]
+
+        return cls(*inference_data)
 
     def set_universe(self, universe):
 

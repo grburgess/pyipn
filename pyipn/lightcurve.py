@@ -14,7 +14,8 @@ class LightCurve(object):
 
         """
 
-        self._arrival_times = np.concatenate([source_arrival_times, bkg_arrival_times])
+        self._arrival_times = np.concatenate(
+            [source_arrival_times, bkg_arrival_times])
 
         self._source_arrival_time = source_arrival_times
 
@@ -70,9 +71,11 @@ class LightCurve(object):
 
             fig = ax.get_figure()
 
-        ax.hlines(rate, edges[:-1], edges[1:], **kwargs)
+        # ax.hlines(rate, edges[:-1], edges[1:], **kwargs)
 
-        ax.vlines(mid_points, rate - err, rate + err, **kwargs)
+        # ax.vlines(mid_points, rate - err, rate + err, **kwargs)
+
+        ax.scatter(mid_points, rate, **kwargs)
 
         ax.set_ylabel("rate")
         ax.set_xlabel("time")
