@@ -6,7 +6,7 @@ import numba as nb
 from pyipn.numba_array import VectorFloat64
 
 
-@nb.njit(fastmath=True)
+@nb.njit(fastmath=True, cache=True)
 def norris(x, K, t_start, t_rise, t_decay):
     if x > t_start:
         return (
@@ -18,7 +18,7 @@ def norris(x, K, t_start, t_rise, t_decay):
         return 0.0
 
 
-@nb.njit(fastmath=True)
+@nb.njit(fastmath=True, cache=True)
 def mulit_pulse(x, Ks, t_starts, t_rises, t_decays):
 
     n_pulses = len(Ks)
@@ -80,12 +80,12 @@ def impl_pulse(x, K, t_start, t_rise, t_decay):
     return impl
 
 
-@nb.njit()
+@nb.njit(fastmath=True, cache=True)
 def pulse(x, K, t_start, t_rise, t_decay):
     return _pulse(x, K, t_start, t_rise, t_decay)
 
 
-@nb.njit(fastmath=True)
+@nb.njit(fastmath=True, cache=True)
 def source_poisson_generator(tstart, tstop, K, p_start, t_rise, t_decay, seed=1234):
     """
     Non-homogeneous poisson process generator
@@ -171,7 +171,7 @@ def source_poisson_generator(tstart, tstop, K, p_start, t_rise, t_decay, seed=12
 #     return arrival_times.arr
 
 
-@nb.njit
+@nb.njit(fastmath=True, cache=True)
 def background_poisson_generator(tstart, tstop, slope, intercept, seed=1234):
     """
     Non-homogeneous poisson process generator
