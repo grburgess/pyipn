@@ -32,9 +32,8 @@ class Fit(object):
 
         """
 
-
         if len(inference_data) == 1:
-        
+
             self._posterior = inference_data[0]
 
         else:
@@ -43,9 +42,8 @@ class Fit(object):
 
             for idata in inference_data[1:]:
 
-
-                self._posterior = av.concat(self._posterior, idata, dim="chain")
-            
+                self._posterior = av.concat(
+                    self._posterior, idata, dim="chain")
 
         self._npix = npix
 
@@ -172,7 +170,7 @@ class Fit(object):
 
             self._has_universe = True
 
-        if self._is_dt_fit:
+        if self._is_dt_fit and self._n_dets > 2:
 
             self._build_moc_map()
 
@@ -207,7 +205,7 @@ class Fit(object):
     def from_netcdf(cls, *file_name):
 
         if len(file_name) == 1:
-        
+
             inference_data = [av.from_netcdf(file_name)]
 
         else:
@@ -431,7 +429,7 @@ class Fit(object):
 
         return fig
 
-    def plot_light_curve_fit(self, detector, tstart, tstop, dt=0.2, thin=1,color='r', **kwargs):
+    def plot_light_curve_fit(self, detector, tstart, tstop, dt=0.2, thin=1, color='r', **kwargs):
 
         self._detector_check(detector)
         assert self._has_universe
@@ -485,8 +483,6 @@ class Fit(object):
 
         fig, ax = plt.subplots()
 
-
-
         if self._is_dt_fit:
 
             bkg = self._background[detector]
@@ -498,7 +494,7 @@ class Fit(object):
         # compute the PPC bounds
 
         ppcs = self._compute_ppcs(detector, tstart, tstop, dt)
-        
+
         ppc_low = []
         ppc_high = []
 
@@ -518,7 +514,7 @@ class Fit(object):
                 ax.fill_between([edges[i], edges[i + 1]],
                                 lo[i], hi[i], fc=colors[j], ec="none", lw=0)
 
-        ax.scatter(mid_points, rate,**kwargs)
+        ax.scatter(mid_points, rate, **kwargs)
 
         ax.set(xlabel="time (s)", ylabel="rate (cnts/s)")
 
@@ -546,8 +542,8 @@ class Fit(object):
 
             bkg = self._background
 
-        
-        ppcs = ppc_generator(mid_points, exposure, pred_rate, bkg, self._n_samples)
+        ppcs = ppc_generator(mid_points, exposure,
+                             pred_rate, bkg, self._n_samples)
 
         return ppcs
 
@@ -673,6 +669,6 @@ def ppc_generator(time, exposure, rates, bkg, N):
 
         for i in range(len(time)):
 
-            out[n, i] = np.random.poisson((rates[n, i] +bkg[n])* exposure[i])
+            out[n, i] = np.random.poisson((rates[n, i] + bkg[n]) * exposure[i])
 
     return out
