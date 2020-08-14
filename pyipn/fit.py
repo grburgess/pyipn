@@ -206,7 +206,7 @@ class Fit(object):
 
         if len(file_name) == 1:
 
-            inference_data = [av.from_netcdf(file_name)]
+            inference_data = [av.from_netcdf(file_name[0])]
 
         else:
 

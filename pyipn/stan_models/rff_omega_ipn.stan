@@ -126,9 +126,9 @@ model {
 
   //bw ~ cauchy(0, 2.5);
 
-  range1_raw ~ normal(0, 1);
+  range1_raw ~ normal(.5, .5);
   //  range_delta ~ normal(0.5, 0.5);
-  range2_raw ~ normal(0, 1);
+  range2_raw ~ normal(.5, .5);
 
   
   omega_var[1] ~ std_normal();
