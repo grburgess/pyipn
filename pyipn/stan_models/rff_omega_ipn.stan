@@ -116,8 +116,8 @@ model {
   beta1 ~ std_normal();
   beta2 ~ std_normal();
 
-  log_scale[2] ~ normal(-2, .5);
-  log_scale[1] ~ normal(-1, .5);
+  log_scale[2] ~ normal(-1, 1.);
+  log_scale[1] ~ normal(1, 1);
 
   //log_scale ~ std_normal();
   
