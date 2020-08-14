@@ -61,7 +61,7 @@ real partial_log_like_bw_multi_scale(int[] counts_slice, int start, int end, vec
 real partial_log_like_bw_multi_scale_fast(int[] counts_slice, int start, int end, vector time, vector exposure, row_vector omega1, row_vector omega2, vector beta1, vector beta2, real dt, real bkg, real scale1, real scale2, real amplitude, int k) {
   
 
-  return poisson_propto_lpmf(counts_slice | exposure[start:end] .* (exp(((scale1 * cos(time[start:end] - dt * omega1) + scale2 * cos(time[start:end] - dt * omega2)  ) * beta1) + ((scale1 * sin(time[start:end] - dt * omega1) + scale2 * sin(time[start:end] - dt * omega2)  ) * beta2)) * amplitude + bkg));
+  return poisson_propto_lpmf(counts_slice | exposure[start:end] .* (exp(((scale1 * cos((time[start:end] - dt) * omega1) + scale2 * cos((time[start:end] - dt) * omega2)  ) * beta1) + ((scale1 * sin((time[start:end] - dt) * omega1) + scale2 * sin((time[start:end] - dt) * omega2)  ) * beta2)) * amplitude + bkg));
 
 }
 
