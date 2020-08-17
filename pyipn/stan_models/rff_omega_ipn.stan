@@ -58,12 +58,13 @@ parameters {
   vector[N_detectors]  log_bkg;
   vector[N_detectors] log_amplitude; // independent amplitude1 of LC 1; probably do not need right now...
 
-  vector[2] log_scale;
+  positive_ordered [2] raw_scale;
+  //real<lower=0> log_scale;
   //positive_ordered[2] bw;
   //ordered[2] log_bw;
 
   real<lower=0, upper=1> range1_raw;
-  real<lower=0, upper=1> range2_raw;
+  real<lower=0, upper=range1_raw> range2_raw;
   
 
   unit_vector[3] grb_xyz; // GRB cartesian location
@@ -76,7 +77,8 @@ transformed parameters {
   vector[N_detectors] bkg = exp(log_bkg);
   vector[N_detectors-1] amplitude = exp(log_amplitude);
 
-  vector[2] scale = exp(log_scale) * inv_sqrt(k);
+   vector[2] scale = raw_scale * inv_sqrt(k);
+  //real scale = log_scale * inv_sqrt(k);
 
   vector[2] range;
   vector[2] bw;
@@ -116,19 +118,19 @@ model {
   beta1 ~ std_normal();
   beta2 ~ std_normal();
 
-  log_scale[2] ~ normal(-1, 1.);
-  log_scale[1] ~ normal(1, 1);
+  /* log_scale[2] ~ normal(-1, 1.); */
+  /* log_scale[1] ~ normal(0, 1); */
 
-  //log_scale ~ std_normal();
+  raw_scale ~ normal(1,1);
   
   
   //log_bw ~ std_normal();
 
   //bw ~ cauchy(0, 2.5);
 
-  range1_raw ~ normal(.5, .5);
+  range1_raw ~ lognormal(log(1e-1), .5);
   //  range_delta ~ normal(0.5, 0.5);
-  range2_raw ~ normal(.5, .5);
+  range2_raw ~ lognormal(log(1e-1), .5);
 
   
   omega_var[1] ~ std_normal();
