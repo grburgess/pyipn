@@ -95,7 +95,7 @@ def source_poisson_generator(tstart, tstop, K, p_start, t_rise, t_decay, seed=12
     """
 
     np.random.seed(seed)
-    
+
     num_time_steps = 1000
 
     time_grid = np.linspace(tstart, tstop + 1.0, num_time_steps)
@@ -181,7 +181,7 @@ def background_poisson_generator(tstart, tstop, slope, intercept, seed=1234):
     """
 
     np.random.seed(seed)
-    
+
     num_time_steps = 1000
 
     time_grid = np.linspace(tstart, tstop + 1.0, num_time_steps)
