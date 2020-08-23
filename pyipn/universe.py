@@ -378,6 +378,7 @@ class Universe(object):
         times = []
         exposures = []
         sc_pos = np.empty((n_dets, 3))
+        sc_pointing = np.empty((n_dets, 3))
 
         n_time_bins = []
 
@@ -410,6 +411,7 @@ class Universe(object):
 
             xyz = v.location.get_cartesian_coord().xyz.value
             sc_pos[n] = xyz
+            sc_pointing[n] = d1.pointing.cartesian
 
         max_n_time_bins = max(n_time_bins)
 

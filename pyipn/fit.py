@@ -21,7 +21,7 @@ from .universe import Universe
 
 
 class Fit(object):
-    def __init__(self, *inference_data, universe_save=None, npix=2 ** 5):
+    def __init__(self, *inference_data, universe_save=None, npix=2 ** 5, fast_open=False):
         """FIXME! briefly describe function
 
         :param inference_data:
@@ -159,7 +159,7 @@ class Fit(object):
                 self._use_bw = False
                 self._multi_bw = True
 
-        self.grb_color = "#06DC94"
+        self.grb_color = "k"
         self._grb_style = "lrtb"
 
         self._has_universe = False
@@ -170,7 +170,7 @@ class Fit(object):
 
             self._has_universe = True
 
-        if self._is_dt_fit and self._n_dets > 2:
+        if self._is_dt_fit and self._n_dets > 2 and (not fast_open):
 
             self._build_moc_map()
 
@@ -202,7 +202,7 @@ class Fit(object):
         return cls(inference_data)
 
     @classmethod
-    def from_netcdf(cls, *file_name):
+    def from_netcdf(cls, *file_name, fast_open=False):
 
         if len(file_name) == 1:
 
@@ -212,7 +212,7 @@ class Fit(object):
 
             inference_data = [av.from_netcdf(f) for f in file_name]
 
-        return cls(*inference_data)
+        return cls(*inference_data, fast_open=fast_open)
 
     def set_universe(self, universe):
 

@@ -42,7 +42,7 @@ class LightCurve(object):
 
         # compute the rate
 
-        rate = counts / dt
+        rate = counts / float(dt)
 
         return rate, edges, counts
 
