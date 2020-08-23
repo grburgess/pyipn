@@ -411,7 +411,7 @@ class Universe(object):
 
             xyz = v.location.get_cartesian_coord().xyz.value
             sc_pos[n] = xyz
-            sc_pointing[n] = d1.pointing.cartesian
+            sc_pointing[n] = v.pointing.cartesian
 
         max_n_time_bins = max(n_time_bins)
 
