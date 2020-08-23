@@ -107,7 +107,7 @@ transformed parameters {
 
   for (n in 1:N_detectors) {
 
-    angular_separation[n]= angular_separation(grb_xyz, sc_pointing_norm[n])
+    angular_separation[n]= angular_separation(grb_xyz, sc_pointing_norm[n]);
 
   }
   
@@ -118,11 +118,11 @@ transformed parameters {
 
   }
 
-  amplitude_mod[1] = cos(ang_sep[1]);
+  amplitude_mod[1] = ang_sep[1];
 
   for (n in 1:N_detectors- 1){
 
-    amplitude_mod[n+1] = amplitude[n] *  cos(ang_sep[n]);
+    amplitude_mod[n+1] = amplitude[n] * ang_sep[n];
   }
 
 }
