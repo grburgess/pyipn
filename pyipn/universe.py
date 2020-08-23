@@ -450,6 +450,7 @@ class Universe(object):
             time=times_stan,
             exposure=exposure_stan,
             sc_pos=sc_pos,
+            sc_pointing_norm=sc_pointing,
             k=k,
             grainsize=grainsize,
             bw=1.0,
