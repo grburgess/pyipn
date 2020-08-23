@@ -107,7 +107,12 @@ real partial_log_like_bw_multi_scale_log(int[] counts_slice, int start, int end,
 
 
 
+real angular_separation(vector grb_xyz, vector sc_pointing_norm) {
 
+  return acos( dot_product(grb_xyz, sc_pointing_norm) );
+  
+
+}
 
 
 
