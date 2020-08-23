@@ -78,7 +78,8 @@ transformed parameters {
   vector[N_detectors] bkg = exp(log_bkg);
   vector[N_detectors-1] amplitude = exp(log_amplitude);
   vector[N_detectors] amplitude_mod;
-
+  vector[N_detectors] ang_sep;
+  
   
    vector[2] scale = raw_scale * inv_sqrt(k);
   //real scale = log_scale * inv_sqrt(k);
@@ -104,6 +105,12 @@ transformed parameters {
   // compute all time delays relative to the first
   // detector
 
+  for (n in 1:N_detectors) {
+
+    angular_separation[n]= angular_separation(grb_xyz, sc_pointing_norm[n])
+
+  }
+  
   for (n in 1:N_detectors-1) {
 
     
@@ -111,11 +118,11 @@ transformed parameters {
 
   }
 
-  amplitude_mod[1] = cos(angular_separation(grb_xyz, sc_pointing_norm[1]));
+  amplitude_mod[1] = cos(ang_sep[1]);
 
   for (n in 1:N_detectors- 1){
 
-    amplitude_mod[n+1] = amplitude[n] *  cos(angular_separation(grb_xyz, sc_pointing_norm[n+1]));
+    amplitude_mod[n+1] = amplitude[n] *  cos(ang_sep[n]);
   }
 
 }
