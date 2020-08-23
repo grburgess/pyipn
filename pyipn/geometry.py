@@ -34,6 +34,10 @@ class Pointing(object):
 
         return self._skycoord.separation(grb.location.coord).rad
 
+    @property
+    def cartesian(self):
+        return self._skycoord.cartesian.xyz.value
+    
 
 # why pointing and location class different
 class Location(object):
