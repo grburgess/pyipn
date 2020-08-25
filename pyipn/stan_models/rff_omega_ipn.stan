@@ -128,10 +128,12 @@ model {
 
   //bw ~ cauchy(0, 2.5);
 
-  range1_raw ~ lognormal(log(1e-1), .5);
+  range1_raw ~ lognormal(0, .2);
   //  range_delta ~ normal(0.5, 0.5);
-  range2_raw ~ lognormal(log(1e-1), .5);
+  range2_raw ~ lognormal(log(1e-2), .2);
 
+  //  range1_raw ~ exponential(1);
+  //range2_raw ~ exponential(3);
   
   omega_var[1] ~ std_normal();
   omega_var[2] ~ std_normal();
