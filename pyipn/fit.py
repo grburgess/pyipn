@@ -47,6 +47,21 @@ class Fit(object):
 
         self._npix = npix
 
+        try:
+            ang_sep = self._posterior.posterior.ang_sep.stack(
+                sample=("chain", "draw")
+            ).values
+
+            self._do_contour = True
+
+        except:
+
+            self._do_contour = False
+
+
+    
+
+        
         self._beta1 = self._posterior.posterior.beta1.stack(
             sample=("chain", "draw")
         ).values
@@ -174,6 +189,10 @@ class Fit(object):
 
             self._build_moc_map()
 
+        elif self._do_contour:
+
+            self._build_moc_map()
+            
     def _build_moc_map(self):
 
         pts = np.column_stack((self._grb_phi, self._grb_theta))
@@ -378,7 +397,7 @@ class Fit(object):
 
             fig = ax.get_figure()
 
-        if self._n_dets == 2:
+        if self._n_dets == 2 and (not self._do_contour):
 
             self._contour_two_detectors(levels, colors, ax=ax, **kwargs)
 
