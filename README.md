@@ -11,7 +11,13 @@
 
 PyIPN is a tool for simulating GRB light curves observed by gamma-ray detectors dispersed throughout the Universe. Additionally, it provides fitting routines for fitting these light curves via random Fourier features to tringulate the location of the simulated GRB. 
 
-This work is a build upon the classical (InterPlanetary Network (IPN))[http://www.ssl.berkeley.edu/ipn3/] developed to do source tringulation via cross-corelation of the observed light curves. 
+This work is a build upon the classical [InterPlanetary Network (IPN)](http://www.ssl.berkeley.edu/ipn3/) developed to do source tringulation via cross-corelation of the observed light curves. 
+
+This work is a joint effort by:
+
+J. Michael Burgess
+Ewan Cameron
+Dmitry Svinkin
 
 
 If you find this work useful, please cite XXXXXX
