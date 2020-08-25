@@ -3,6 +3,7 @@
 [![PyPI version fury.io](https://badge.fury.io/py/pyipn.svg)](https://pypi.python.org/pypi/pyipn/)
 [![Documentation Status](https://readthedocs.org/projects/pyipn/badge/?version=latest)](https://pyipn.readthedocs.io/?badge=latest)
 ![GitHub contributors](https://img.shields.io/github/contributors/grburgess/pyipn)
+[![astropy](http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat)](http://www.astropy.org/)
 
 
 # pyipn
