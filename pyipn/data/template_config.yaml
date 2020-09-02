@@ -1,5 +1,8 @@
 ## Specify the GRB parameters
 
+seed: 1234
+
+
 grb:
 
   # Location and distance (degrees and Mpc)
@@ -23,7 +26,7 @@ detectors:
     # it's location in GCRS
     ra: 10.
     dec: 0.
-    altitude: 3000. # km
+    altitude: 500. # km
     time: '2010-01-01T00:00:00' # time of detection
 
     # Where the detector point in the sky
@@ -48,7 +51,7 @@ detectors:
       ra: 10.
       dec: 30.
 
-    effective_area: 1.
+    effective_area: .5
 
   det3:
 

@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import collections
 from itertools import combinations
 import yaml
@@ -17,7 +18,7 @@ from .lightcurve import LightCurve
 from .grb import GRB
 from .detector import Detector
 
-from .io.plotting.projection import *
+
 from .io.plotting.projection import create_skw_dict
 from .io.plotting.spherical_circle import SphericalCircle, get_3d_circle
 from .utils.hdf5_utils import (
@@ -580,6 +581,44 @@ class Universe(object):
         norm_grb_loc = grb_loc.get_norm_vec(u.km)
         return grb_loc
 
+    @property
+    def table(self):
+        """
+        output a table with informations
+
+        :returns: 
+        :rtype: 
+
+        """
+        
+        output = collections.OrderedDict()
+
+        output["name"] = []
+        output[r"$\Delta t$"] = self._T0
+        output["altitude"] = []
+        output["position"] = []
+        output["pointing"] = []
+        output["eff. area"] = []
+
+        for k,v in self._detectors.items():
+
+            output["name"].append(k)
+
+            output["altitude"].append(v.location.altitude)
+
+            position = f"{v.location.coord.ra.deg},{v.location.coord.dec.deg}"
+
+            output["position"].append(position)
+
+            
+            position = f"{v.pointing.coord.ra.deg},{v.pointing.coord.dec.deg}"
+
+            output["pointing"].append(position)
+
+            output["eff. area"].append(v.effective_area.total_area)
+
+        return pd.DataFrame(output)
+
 
 class UniverseSave(object):
     def __init__(self, yaml_dict, source_lightcurves, bkg_lightcurves):
@@ -642,3 +681,4 @@ class UniverseSave(object):
     def bkg_lightcurves(self):
 
         return self._bkg_lightcurves
+

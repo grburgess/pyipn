@@ -4,7 +4,7 @@ import astropy.constants as const
 import astropy.units as u
 from astropy.coordinates import SkyCoord, UnitSphericalRepresentation
 
-from pyipn.io.plotting.projection import *
+
 from pyipn.io.plotting.spherical_circle import SphericalCircle
 
 

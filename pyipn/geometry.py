@@ -37,7 +37,10 @@ class Pointing(object):
     @property
     def cartesian(self):
         return self._skycoord.cartesian.xyz.value
-    
+
+    @property
+    def coord(self):
+        return self._skycoord
 
 # why pointing and location class different
 class Location(object):
