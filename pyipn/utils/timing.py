@@ -25,8 +25,9 @@ def theta_from_time_delay(dt, distance):
 
 def calculate_distance_and_norm(d1, d2):
 
-    dxyz = d2.location.get_cartesian_coord().xyz - d1.location.get_cartesian_coord().xyz
+    dxyz = (d2.location.get_cartesian_coord().xyz - d1.location.get_cartesian_coord().xyz).to('km')
 
+    
     # calculate ra and dec of vector d  pointing from detector1 to detector2
     dcart = Location(
         SkyCoord(
@@ -34,7 +35,7 @@ def calculate_distance_and_norm(d1, d2):
             y=dxyz[1],
             z=dxyz[2],
             representation_type="cartesian",
-            unit="km",
+#            unit="km",
             frame="icrs",
         )
     )
