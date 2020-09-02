@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import astropy.constants as const
 import astropy.units as u
 from astropy.coordinates import SkyCoord, UnitSphericalRepresentation
-
+from pyipn.io.plotting.projection import create_skw_dict
 
 from pyipn.io.plotting.spherical_circle import SphericalCircle
 
@@ -42,7 +42,7 @@ def calculate_distance_and_norm(d1, d2):
     norm_d = dcart.get_norm_vec(u.km)
     ra = dcart.coord.represent_as(UnitSphericalRepresentation).lon
     dec = dcart.coord.represent_as(UnitSphericalRepresentation).lat
-    distance = np.linalg.norm(dxyz).to("km")
+    distance = np.linalg.norm(dxyz)
 
     return distance, norm_d, ra, dec
 
