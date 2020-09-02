@@ -5,7 +5,7 @@ from astropy.units import Quantity
 
 from pyipn import Universe, copy_template
 from pyipn.utils.timing import calculate_distance_and_norm
-
+from pyipn import BinnedLightCurve, Correlator
 
 def test_calculate_annulus(universe):
 
@@ -75,3 +75,22 @@ def test_read_fit(fit, universe):
     fit.plot_light_curve_fit(0,0,20,dt=1)
 
     
+def test_correlation(universe):
+
+    lc1 = BinnedLightCurve.from_lightcurve(universe.light_curves["det1"],-10,50,.1)
+    lc2 = BinnedLightCurve.from_lightcurve(universe.light_curves["det2"],-10,50,.1)
+
+    t_cc_beg_1 = -5 # for lc 1
+    t_cc_beg_2 = 0. # for lc 2
+    t_cc_end_2 = 20. # for lc 2
+
+    idx_lc_1 = lc1.time2idx(t_cc_beg_1)
+    idx_beg_lc2 = lc2.time2idx(t_cc_beg_2)
+    idx_end_lc2 = lc2.time2idx(t_cc_end_2)
+
+    cc = Correlator(lc1, lc2, idx_lc_1, idx_beg_lc2, idx_end_lc2, cl_sigma=[1,2,3])
+
+    cc.dt_min
+
+    assert len(cc.dt_lower) == 3
+    assert len(cc.dt_upper) == 3
