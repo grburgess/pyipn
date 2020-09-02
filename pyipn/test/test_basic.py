@@ -1,14 +1,17 @@
 from pyipn import Universe, copy_template
+import pytest
 
 
-def test_simple():
+def test_simple(universe):
 
-    copy_template()
-    uni = Universe.from_yaml("template_config.yaml")
-    uni.explode_grb(tstart=-50, tstop=50)
-    for det, lc in uni.light_curves.items():
+
+    for det, lc in universe.light_curves.items():
 
         lc.display(-10, 50, 1.0)
-    print(uni.calculate_annulus("det1", "det2"))
+    print(universe.calculate_annulus("det1", "det2"))
 
-    uni.plot_all_annuli()
+    print(universe.T0)
+
+    print(universe.table)
+
+    universe.plot_all_annuli()

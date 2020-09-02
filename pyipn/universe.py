@@ -148,7 +148,7 @@ class Universe(object):
             )  # time in seconds
             assert (
                 dt >= 0
-            ), "The time diferences should be positive if the ranking worked!"
+            ), "The time differences should be positive if the ranking worked!"
 
             T0 += dt
             self._T0.append(T0)

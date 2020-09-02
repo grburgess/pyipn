@@ -7,7 +7,7 @@ python:
 install:
 - pip install --upgrade cython coverage pytest pytest-cov  codecov astropy
 - python setup.py install
-env: NUMBA_DISABLE_JIT=1
+#env: NUMBA_DISABLE_JIT=1
 script:
 - python -m pytest -vv --cov=pyipn/
 #- codecov --token=2adee64a-60b0-4c7e-b94c-512ea2b8e794
