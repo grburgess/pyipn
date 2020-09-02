@@ -21,7 +21,7 @@ from .universe import Universe
 
 
 class Fit(object):
-    def __init__(self, *inference_data, universe_save=None, npix=2 ** 5):
+    def __init__(self, *inference_data, universe_save=None, npix=2 ** 5, fast_open=False):
         """FIXME! briefly describe function
 
         :param inference_data:
@@ -47,6 +47,21 @@ class Fit(object):
 
         self._npix = npix
 
+        try:
+            ang_sep = self._posterior.posterior.ang_sep.stack(
+                sample=("chain", "draw")
+            ).values
+
+            self._do_contour = True
+
+        except:
+
+            self._do_contour = False
+
+
+    
+
+        
         self._beta1 = self._posterior.posterior.beta1.stack(
             sample=("chain", "draw")
         ).values
@@ -159,7 +174,7 @@ class Fit(object):
                 self._use_bw = False
                 self._multi_bw = True
 
-        self.grb_color = "#06DC94"
+        self.grb_color = "k"
         self._grb_style = "lrtb"
 
         self._has_universe = False
@@ -170,10 +185,14 @@ class Fit(object):
 
             self._has_universe = True
 
-        if self._is_dt_fit and self._n_dets > 2:
+        if self._is_dt_fit and self._n_dets > 2 and (not fast_open):
 
             self._build_moc_map()
 
+        elif self._do_contour:
+
+            self._build_moc_map()
+            
     def _build_moc_map(self):
 
         pts = np.column_stack((self._grb_phi, self._grb_theta))
@@ -202,7 +221,7 @@ class Fit(object):
         return cls(inference_data)
 
     @classmethod
-    def from_netcdf(cls, *file_name):
+    def from_netcdf(cls, *file_name, fast_open=False):
 
         if len(file_name) == 1:
 
@@ -212,7 +231,7 @@ class Fit(object):
 
             inference_data = [av.from_netcdf(f) for f in file_name]
 
-        return cls(*inference_data)
+        return cls(*inference_data, fast_open=fast_open)
 
     def set_universe(self, universe):
 
@@ -378,7 +397,7 @@ class Fit(object):
 
             fig = ax.get_figure()
 
-        if self._n_dets == 2:
+        if self._n_dets == 2 and (not self._do_contour):
 
             self._contour_two_detectors(levels, colors, ax=ax, **kwargs)
 

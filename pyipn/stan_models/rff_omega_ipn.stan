@@ -56,7 +56,7 @@ parameters {
 
 
   vector[N_detectors]  log_bkg;
-  vector[N_detectors] log_amplitude; // independent amplitude1 of LC 1; probably do not need right now...
+  vector[N_detectors-1] log_amplitude; // independent amplitude1 of LC 1; probably do not need right now...
 
   positive_ordered [2] raw_scale;
   //real<lower=0> log_scale;

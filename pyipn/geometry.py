@@ -34,6 +34,13 @@ class Pointing(object):
 
         return self._skycoord.separation(grb.location.coord).rad
 
+    @property
+    def cartesian(self):
+        return self._skycoord.cartesian.xyz.value
+
+    @property
+    def coord(self):
+        return self._skycoord
 
 # why pointing and location class different
 class Location(object):
@@ -92,6 +99,9 @@ class DetectorLocation(Location):
 
         distance = DetectorLocation._EARTH_RADIUS + altitude
 
+        self._altitude = altitude
+        
+        
         # create a sky coordinate for the detector
 
         sky_coord = SkyCoord(
@@ -99,3 +109,7 @@ class DetectorLocation(Location):
         )
 
         super(DetectorLocation, self).__init__(sky_coord)
+
+    @property
+    def altitude(self):
+        return self._altitude

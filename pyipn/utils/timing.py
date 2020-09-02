@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import astropy.constants as const
 import astropy.units as u
 from astropy.coordinates import SkyCoord, UnitSphericalRepresentation
+from pyipn.io.plotting.projection import create_skw_dict
 
-from pyipn.io.plotting.projection import *
 from pyipn.io.plotting.spherical_circle import SphericalCircle
 
 
@@ -25,8 +25,9 @@ def theta_from_time_delay(dt, distance):
 
 def calculate_distance_and_norm(d1, d2):
 
-    dxyz = d2.location.get_cartesian_coord().xyz - d1.location.get_cartesian_coord().xyz
+    dxyz = (d2.location.get_cartesian_coord().xyz - d1.location.get_cartesian_coord().xyz).to('km')
 
+    
     # calculate ra and dec of vector d  pointing from detector1 to detector2
     dcart = Location(
         SkyCoord(
@@ -34,7 +35,7 @@ def calculate_distance_and_norm(d1, d2):
             y=dxyz[1],
             z=dxyz[2],
             representation_type="cartesian",
-            unit="km",
+#            unit="km",
             frame="icrs",
         )
     )
@@ -42,8 +43,16 @@ def calculate_distance_and_norm(d1, d2):
     norm_d = dcart.get_norm_vec(u.km)
     ra = dcart.coord.represent_as(UnitSphericalRepresentation).lon
     dec = dcart.coord.represent_as(UnitSphericalRepresentation).lat
-    distance = np.linalg.norm(dxyz).to("km")
 
+    try:
+
+        distance = np.linalg.norm(dxyz).to("km")
+
+    except(AttributeError):
+
+        distance = np.linalg.norm(dxyz) * u.km
+
+        
     return distance, norm_d, ra, dec
 
 
@@ -74,7 +83,7 @@ def compute_annulus_from_time_delay(
 
     for dt in time_delays:
 
-        theta = theta_from_time_delay(-dt, distance)
+        theta = theta_from_time_delay(-dt, distance * u.km )
 
         thetas.append(theta)
 

@@ -1,35 +1,30 @@
-import numpy as np
 import collections
 from itertools import combinations
-import yaml
-from astropy.time import Time
-import astropy.units as u
+
 import astropy.constants as constants
-from astropy.coordinates import SkyCoord, UnitSphericalRepresentation
-from mpltools import color as mpl_color
-import matplotlib.pyplot as plt
-import ipyvolume as ipv
+import astropy.units as u
 import h5py
+import ipyvolume as ipv
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import yaml
+from astropy.coordinates import SkyCoord, UnitSphericalRepresentation
+from astropy.time import Time
+from mpltools import color as mpl_color
 
-from .effective_area import EffectiveArea
-from .geometry import Pointing, DetectorLocation, Location
-from .lightcurve import LightCurve
-from .grb import GRB
 from .detector import Detector
-
-from .io.plotting.projection import *
+from .effective_area import EffectiveArea
+from .geometry import DetectorLocation, Location, Pointing
+from .grb import GRB
 from .io.plotting.projection import create_skw_dict
 from .io.plotting.spherical_circle import SphericalCircle, get_3d_circle
-from .utils.hdf5_utils import (
-    recursively_load_dict_contents_from_group,
-    recursively_save_dict_contents_to_group,
-)
-
-from .utils.timing import (
-    compute_annulus_from_time_delay,
-    calculate_distance_and_norm,
-    theta_from_time_delay,
-)
+from .lightcurve import LightCurve
+from .utils.hdf5_utils import (recursively_load_dict_contents_from_group,
+                               recursively_save_dict_contents_to_group)
+from .utils.timing import (calculate_distance_and_norm,
+                           compute_annulus_from_time_delay,
+                           theta_from_time_delay)
 
 
 class Universe(object):
@@ -130,9 +125,7 @@ class Universe(object):
             # calculate closest distanistancece to wavefront when the GRB reaches the detector
             # (negative sign for right order)
             ltd.append(
-                -norm_grb_vec.dot(detector.location.get_cartesian_coord().xyz)
-                .to("km")
-                .value
+                -norm_grb_vec.dot(detector.location.get_cartesian_coord().xyz.to("km")).value
             )
 
         # rank the distances in ascending order
@@ -150,11 +143,12 @@ class Universe(object):
         for i in range(len(ltd) - 1):
 
             dt = (
-                ((ltd[i + 1] - ltd[i]) * u.km / constants.c).decompose().to("s").value
+                ((ltd[i + 1] - ltd[i]) * u.km /
+                 constants.c).decompose().to("s").value
             )  # time in seconds
             assert (
                 dt >= 0
-            ), "The time diferences should be positive if the ranking worked!"
+            ), "The time differences should be positive if the ranking worked!"
 
             T0 += dt
             self._T0.append(T0)
@@ -173,7 +167,7 @@ class Universe(object):
         :rtype: 
 
         """
-        
+
         self._light_curves = collections.OrderedDict()
 
         i = 0
@@ -183,7 +177,7 @@ class Universe(object):
                 self._grb, t0, tstart, tstop, seed=self._seed + i
             )
 
-            i+=10
+            i += 10
 
     def write_to(self, file_name):
 
@@ -210,7 +204,7 @@ class Universe(object):
         else:
 
             seed = 12345
-            
+
         if "t_start" in grb_params:
 
             t_start = grb_params["t_start"]
@@ -247,7 +241,8 @@ class Universe(object):
                 value["ra"], value["dec"], value["altitude"] * u.km, time
             )
 
-            pointing = Pointing(value["pointing"]["ra"], value["pointing"]["dec"])
+            pointing = Pointing(value["pointing"]["ra"],
+                                value["pointing"]["dec"])
 
             det = Detector(location, pointing, eff_area, name)
 
@@ -286,7 +281,8 @@ class Universe(object):
 
         for i, (k, v) in enumerate(universe.detectors.items()):
 
-            lc = LightCurve(uni_save.source_lightcurves[i], uni_save.bkg_lightcurves[i])
+            lc = LightCurve(
+                uni_save.source_lightcurves[i], uni_save.bkg_lightcurves[i])
 
             universe._light_curves[k] = lc
 
@@ -342,7 +338,8 @@ class Universe(object):
                 fig = ax.get_figure()
 
         # compute the annulus for this set of detectors
-        cart_vec, spherical_vec, theta = self.calculate_annulus(detector1, detector2)
+        cart_vec, spherical_vec, theta = self.calculate_annulus(
+            detector1, detector2)
 
         if not threeD:
             circle = SphericalCircle(
@@ -378,18 +375,16 @@ class Universe(object):
         times = []
         exposures = []
         sc_pos = np.empty((n_dets, 3))
+        sc_pointing = np.empty((n_dets, 3))
 
         n_time_bins = []
 
         # allow for variable time selections
-        
+
         tstart = np.atleast_1d(tstart)
         tstop = np.atleast_1d(tstop)
         dt = np.atleast_1d(dt)
 
-
-        
-        
         for n, (det_nam, v) in enumerate(self._detectors.items()):
 
             lc = self._light_curves[det_nam]
@@ -397,7 +392,7 @@ class Universe(object):
             if n >= len(tstart):
 
                 n = 0
-            
+
             _, t, c = lc.get_binned_light_curve(tstart[n], tstop[n], dt[n])
 
             mid = np.mean([t[:-1], t[1:]], axis=0)
@@ -410,6 +405,7 @@ class Universe(object):
 
             xyz = v.location.get_cartesian_coord().xyz.value
             sc_pos[n] = xyz
+            sc_pointing[n] = v.pointing.cartesian
 
         max_n_time_bins = max(n_time_bins)
 
@@ -448,6 +444,7 @@ class Universe(object):
             time=times_stan,
             exposure=exposure_stan,
             sc_pos=sc_pos,
+            sc_pointing_norm=sc_pointing,
             k=k,
             grainsize=grainsize,
             bw=1.0,
@@ -488,7 +485,8 @@ class Universe(object):
 
                 assert radius is not None, "you must specify a radius"
 
-                skw_dict = dict(projection=projection, center=center, radius=radius)
+                skw_dict = dict(projection=projection,
+                                center=center, radius=radius)
 
             fig, ax = plt.subplots(subplot_kw=skw_dict)
 
@@ -522,8 +520,10 @@ class Universe(object):
 
             if threeD:
 
-                loc1 = self._detectors[d1].location.get_cartesian_coord().xyz.value
-                loc2 = self._detectors[d2].location.get_cartesian_coord().xyz.value
+                loc1 = self._detectors[d1].location.get_cartesian_coord(
+                ).xyz.value
+                loc2 = self._detectors[d2].location.get_cartesian_coord(
+                ).xyz.value
 
                 ipv.plot(
                     np.array([loc1[0], loc2[0]]),
@@ -576,6 +576,43 @@ class Universe(object):
         )
         norm_grb_loc = grb_loc.get_norm_vec(u.km)
         return grb_loc
+
+    @property
+    def table(self):
+        """
+        output a table with informations
+
+        :returns: 
+        :rtype: 
+
+        """
+
+        output = collections.OrderedDict()
+
+        output["name"] = []
+        output[r"$\Delta t$"] = self._T0
+        output["altitude"] = []
+        output["position"] = []
+        output["pointing"] = []
+        output["eff. area"] = []
+
+        for k, v in self._detectors.items():
+
+            output["name"].append(k)
+
+            output["altitude"].append(v.location.altitude)
+
+            position = f"{v.location.coord.ra.deg},{v.location.coord.dec.deg}"
+
+            output["position"].append(position)
+
+            position = f"{v.pointing.coord.ra.deg},{v.pointing.coord.dec.deg}"
+
+            output["pointing"].append(position)
+
+            output["eff. area"].append(v.effective_area.total_area)
+
+        return pd.DataFrame(output)
 
 
 class UniverseSave(object):

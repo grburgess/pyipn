@@ -120,3 +120,4 @@ pyipn/test.ipynb
 *.d
 *.hpp
 *.o
+*.ipynb
