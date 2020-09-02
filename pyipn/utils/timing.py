@@ -83,7 +83,7 @@ def compute_annulus_from_time_delay(
 
     for dt in time_delays:
 
-        theta = theta_from_time_delay(-dt, distance * u.km )
+        theta = theta_from_time_delay(-dt, distance )
 
         thetas.append(theta)
 
