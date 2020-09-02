@@ -43,8 +43,16 @@ def calculate_distance_and_norm(d1, d2):
     norm_d = dcart.get_norm_vec(u.km)
     ra = dcart.coord.represent_as(UnitSphericalRepresentation).lon
     dec = dcart.coord.represent_as(UnitSphericalRepresentation).lat
-    distance = np.linalg.norm(dxyz).to("km")
 
+    try:
+
+        distance = np.linalg.norm(dxyz).to("km")
+
+    except(AttributeError):
+
+        distance = np.linalg.norm(dxyz) * u.km
+
+        
     return distance, norm_d, ra, dec
 
 
