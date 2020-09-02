@@ -310,7 +310,7 @@ class Universe(object):
         ) * u.second  # seconds
         # rounding to 15th decimal because small numerical errors cause issues with numbers slightly over 1
 
-        theta = theta_from_time_delay(dt, distance *u.km)
+        theta = theta_from_time_delay(dt, distance)
 
         return (norm_d, np.array([ra.value, dec.value]) * ra.unit, theta * u.rad)
 
