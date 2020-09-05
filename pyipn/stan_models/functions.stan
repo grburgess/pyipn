@@ -148,12 +148,12 @@ real earth_occulation(real horizon_angle, vector sc_position, vector grb_xyz) {
 
   if (angle < horizon_angle) {
 
-      return 0.
+    return 0.;
     }
 
   else {
 
-    return 1.
+    return 1.;
 
   }
 
