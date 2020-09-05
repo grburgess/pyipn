@@ -9,6 +9,7 @@ _available_models = [
     "rff_ipn.stan",
     "rff_omega_ipn.stan",
     "rff_omega_ipn_cos.stan",
+    "rff_omega_ipn_earth.stan",
     "rff_bw_ipn.stan",
     "rff.stan",
     "rff_bw.stan",
