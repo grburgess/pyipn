@@ -140,11 +140,21 @@ real calculate_horizon_angle(vector sc_position) {
 
 }
 
+
+vector norm_vector(vector sc_position) {
+
+  real norm = sqrt(sum((sc_position .* sc_position)));
+
+  return sc_position/norm;
+
+}
+
+
 real earth_occulation(real horizon_angle, vector sc_position, vector grb_xyz) {
 
   real tmp;
 
-  real angle = dot_product(grb_xyz, -sc_position);
+  real angle = acos(dot_product(grb_xyz, -sc_position));
 
   if (angle < horizon_angle) {
 

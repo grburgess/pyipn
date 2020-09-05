@@ -45,11 +45,13 @@ transformed data {
   real max_range = max(maxs) - min(mins);
 
   vector[N_detectors] horizon_angle;
+  vector[3] sc_pos_norm[N_detectors];
 
   for (n in 1:N_detectors) {
 
     horizon_angle[n] = calculate_horizon_angle(sc_pos[n]);
-
+    sc_pos_norm[n] = norm_vector(sc_pos[n])
+    
   }
 
   
@@ -115,7 +117,7 @@ transformed parameters {
 
   for (n in 1:N_detectors) {
 
-    earth_occulted[n]= earth_occulation(horizon_angle[n], sc_pos[n], grb_xyz);
+    earth_occulted[n]= earth_occulation(horizon_angle[n], sc_pos_norm[n], grb_xyz);
     
   }
   
