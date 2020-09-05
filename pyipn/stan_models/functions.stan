@@ -144,7 +144,7 @@ real earth_occulation(real horizon_angle, vector sc_position, vector grb_xyz) {
 
   real tmp;
 
-  real angle = dot_product(grb_xyz, -sc_pointing_norm);
+  real angle = dot_product(grb_xyz, -sc_position);
 
   if (angle < horizon_angle) {
 

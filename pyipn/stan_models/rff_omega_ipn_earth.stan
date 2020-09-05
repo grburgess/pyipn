@@ -115,7 +115,7 @@ transformed parameters {
 
   for (n in 1:N_detectors) {
 
-    earth_occulted[n]= earth_occulation(horizon_angle[n], sc_pointing_norm[n], grb_xyz);
+    earth_occulted[n]= earth_occulation(horizon_angle[n], sc_pos[n], grb_xyz);
     
   }
   
