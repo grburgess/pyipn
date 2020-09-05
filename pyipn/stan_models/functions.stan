@@ -127,6 +127,41 @@ real angular_separation(vector grb_xyz, vector sc_pointing_norm) {
 
 
 
+real calculate_horizon_angle(vector sc_position) {
+
+  real earth_radius = 6371.0;
+  real altitude = sqrt(sum((sc_position *. sc_position)));
+  real horizon_angle = 0.5 * pi() - acos(earth_radius/altitude);
+
+  return horizon_angle;
+
+
+  
+
+}
+
+real earth_occulation(real horizon_angle, vector sc_position, vector grb_xyz) {
+
+  real tmp;
+
+  real angle = dot_product(grb_xyz, -sc_pointing_norm);
+
+  if angle < horizon_angle {
+
+      return 0.
+    }
+
+  else {
+
+    return 1.
+
+  }
+
+  
+
+}
+
+
 
 
 real time_delay( vector grb_xyz, vector sc_pos1, vector sc_pos2) {
