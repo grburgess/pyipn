@@ -88,7 +88,7 @@ class Universe(object):
     def grb_radius(self):
         return self._grb_radius
 
-    def explode_grb(self, tstart, tstop, verbose=True):
+    def explode_grb(self, tstart, tstop, verbose=True, earth_blockage=False):
         """FIXME! briefly describe function
 
         :param verbose: 
@@ -101,7 +101,7 @@ class Universe(object):
 
             self._compute_time_differences()
 
-            self._create_light_curves(tstart, tstop)
+            self._create_light_curves(tstart, tstop, earth_blockage)
         else:
 
             print("This universe is locked")
@@ -160,7 +160,23 @@ class Universe(object):
         self._T0 = self._T0[unsort]
         self._time_differences[unsort]
 
-    def _create_light_curves(self, tstart, tstop):
+        # now sort the detectors
+
+        order_idx = np.argsort(self._T0)
+        det_list = np.array(list(self._detectors.keys()))
+
+        new_detectors = collections.OrderedDict()
+
+        for det in det_list[order_idx]:
+
+            new_detectors[det] = self._detectors[det]
+
+        self._detectors = new_detectors
+
+        self._T0 = self._T0[order_idx]
+        self._time_differences = self._time_differences[order_idx]
+
+    def _create_light_curves(self, tstart, tstop, earth_blockage=False):
         """FIXME! briefly describe function
 
         :returns: 
@@ -174,8 +190,8 @@ class Universe(object):
         for t0, (name, detector) in zip(self._T0, self._detectors.items()):
 
             self._light_curves[name] = detector.build_light_curve(
-                self._grb, t0, tstart, tstop, seed=self._seed + i
-            )
+                self._grb, t0, tstart, tstop, seed=self._seed + i,
+                earth_blockage=earth_blockage)
 
             i += 10
 
@@ -459,7 +475,7 @@ class Universe(object):
         center=None,
         cmap="Set1",
         threeD=True,
-        use_all = False,
+        use_all=False,
         **kwargs,
     ):
 
@@ -501,7 +517,7 @@ class Universe(object):
         # get the colors to use
 
         if use_all:
-        
+
             n_verts = self._n_detectors * (self._n_detectors - 1) / 2
 
             colors = mpl_color.colors_from_cmap(int(n_verts), cmap=cmap)
@@ -536,12 +552,13 @@ class Universe(object):
                     )
         else:
 
-            colors = mpl_color.colors_from_cmap(len(self._detectors) -1, cmap=cmap)
+            colors = mpl_color.colors_from_cmap(
+                len(self._detectors) - 1, cmap=cmap)
 
             det_list = list(self._detectors.keys())
 
             d1 = det_list[0]
-            
+
             for i, d2 in enumerate(det_list[1:]):
 
                 _ = self.plot_annulus(
@@ -571,9 +588,6 @@ class Universe(object):
                         color=colors[i],
                     )
 
-            
-
-                    
         if threeD:
 
             ipv.scatter(
