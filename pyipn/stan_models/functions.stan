@@ -138,3 +138,4 @@ real time_delay( vector grb_xyz, vector sc_pos_diff) {
 
   return dot_product(grb_xyz, sc_pos_diff) * inv(c());
 
+}
