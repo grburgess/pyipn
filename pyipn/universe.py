@@ -117,7 +117,7 @@ class Universe(object):
         ltd = []
 
         norm_grb_vec = self._grb.location.get_norm_vec(
-            u.km
+            u.km, frame="gcrs"
         )  # normalized vector towards GRB
 
         for name, detector in self._detectors.items():
