@@ -459,6 +459,7 @@ class Universe(object):
         center=None,
         cmap="Set1",
         threeD=True,
+        use_all = False,
         **kwargs,
     ):
 
@@ -499,39 +500,80 @@ class Universe(object):
 
         # get the colors to use
 
-        n_verts = self._n_detectors * (self._n_detectors - 1) / 2
+        if use_all:
+        
+            n_verts = self._n_detectors * (self._n_detectors - 1) / 2
 
-        colors = mpl_color.colors_from_cmap(int(n_verts), cmap=cmap)
+            colors = mpl_color.colors_from_cmap(int(n_verts), cmap=cmap)
 
-        for i, (d1, d2) in enumerate(combinations(self._detectors.keys(), 2)):
+            for i, (d1, d2) in enumerate(combinations(self._detectors.keys(), 2)):
 
-            _ = self.plot_annulus(
-                d1,
-                d2,
-                projection=projection,
-                center=center,
-                radius=radius,
-                ax=ax,
-                edgecolor=colors[i],
-                threeD=threeD,
-                color=colors[i],
-                **kwargs,
-            )
-
-            if threeD:
-
-                loc1 = self._detectors[d1].location.get_cartesian_coord(
-                ).xyz.value
-                loc2 = self._detectors[d2].location.get_cartesian_coord(
-                ).xyz.value
-
-                ipv.plot(
-                    np.array([loc1[0], loc2[0]]),
-                    np.array([loc1[1], loc2[1]]),
-                    np.array([loc1[2], loc2[2]]),
+                _ = self.plot_annulus(
+                    d1,
+                    d2,
+                    projection=projection,
+                    center=center,
+                    radius=radius,
+                    ax=ax,
+                    edgecolor=colors[i],
+                    threeD=threeD,
                     color=colors[i],
+                    **kwargs,
                 )
 
+                if threeD:
+
+                    loc1 = self._detectors[d1].location.get_cartesian_coord(
+                    ).xyz.value
+                    loc2 = self._detectors[d2].location.get_cartesian_coord(
+                    ).xyz.value
+
+                    ipv.plot(
+                        np.array([loc1[0], loc2[0]]),
+                        np.array([loc1[1], loc2[1]]),
+                        np.array([loc1[2], loc2[2]]),
+                        color=colors[i],
+                    )
+        else:
+
+            colors = mpl_color.colors_from_cmap(len(self._detectors) -1, cmap=cmap)
+
+            det_list = list(self._detectors.keys())
+
+            d1 = det_list[0]
+            
+            for i, d2 in enumerate(det_list[1:]):
+
+                _ = self.plot_annulus(
+                    d1,
+                    d2,
+                    projection=projection,
+                    center=center,
+                    radius=radius,
+                    ax=ax,
+                    edgecolor=colors[i],
+                    threeD=threeD,
+                    color=colors[i],
+                    **kwargs,
+                )
+
+                if threeD:
+
+                    loc1 = self._detectors[d1].location.get_cartesian_coord(
+                    ).xyz.value
+                    loc2 = self._detectors[d2].location.get_cartesian_coord(
+                    ).xyz.value
+
+                    ipv.plot(
+                        np.array([loc1[0], loc2[0]]),
+                        np.array([loc1[1], loc2[1]]),
+                        np.array([loc1[2], loc2[2]]),
+                        color=colors[i],
+                    )
+
+            
+
+                    
         if threeD:
 
             ipv.scatter(
