@@ -30,8 +30,19 @@ transformed data {
   
   real inv_sqrt_k = inv_sqrt(k);
 
+  vector[3]  sc_diffs[N_detectors-1]; // precomputed sc position differences
+  
   vector[N_detectors] maxs;
   vector[N_detectors] mins;
+
+  // figure out the scales
+  
+  for (n in 1:N_detectors){
+
+    maxs[n] = max(time[n]);
+    mins[n] = min(time[n]);
+
+  }
 
   for (n in 1:N_detectors){
 
@@ -40,8 +51,19 @@ transformed data {
 
   }
 
+  
 
   real max_range = max(maxs) - min(mins);
+
+
+  // compute the differnces
+  for (n in 1:N_detectors -1) {
+
+    sc_diffs[n] = sc_pos[1] - sc_pos[n+1];
+
+
+  }
+
 
   
 }
@@ -104,7 +126,7 @@ transformed parameters {
   for (n in 1:N_detectors-1) {
 
     
-    dt[n] = time_delay(grb_xyz, sc_pos[1], sc_pos[n+1]);
+    dt[n] = time_delay(grb_xyz, sc_diffs[n]);
 
   }
 
