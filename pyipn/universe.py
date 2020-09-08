@@ -537,8 +537,8 @@ class Universe(object):
             ipv.scatter(
                 *(
                     self._grb_radius
-                    * self._grb.location.get_cartesian_coord().xyz.value
-                    / np.linalg.norm(self._grb.location.get_cartesian_coord().xyz.value)
+                    * self._grb.location.get_cartesian_coord("gcrs").xyz.value
+                    / np.linalg.norm(self._grb.location.get_cartesian_coord("gcrs").xyz.value)
                 )[np.newaxis].T,
                 marker="sphere",
                 color="green",

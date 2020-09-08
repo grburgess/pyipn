@@ -86,7 +86,7 @@ class GRBLocation(Location):
 
 
 class DetectorLocation(Location):
-    _EARTH_RADIUS = 6700 * u.km
+    _EARTH_RADIUS = 6371 * u.km
 
     def __init__(self, ra, dec, altitude, obs_time):
         """FIXME! briefly describe function
