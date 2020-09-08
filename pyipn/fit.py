@@ -535,7 +535,7 @@ class Fit(object):
 
         ax.scatter(mid_points, rate, **kwargs)
 
-        ax.set(xlabel="time (s)", ylabel="rate (cnts/s)")
+        ax.set(xlabel="time (s)", ylabel=r"rate (cnt s$^{-1}$)")
 
         return fig
 

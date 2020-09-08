@@ -28,7 +28,7 @@ class LightCurve(object):
         :param tstop: 
         :param dt: 
         :returns: 
-        :rtype: 
+        :rtype: rate, edges, counts
 
         """
 
