@@ -29,7 +29,8 @@ transformed data {
   vector[max_N_time_bins] log_exposure[N_detectors] = log(exposure);
   
   real inv_sqrt_k = inv_sqrt(k);
-
+  int detector_index[N_detectors];
+  
   vector[3]  sc_diffs[N_detectors-1]; // precomputed sc position differences
   
   vector[N_detectors] maxs;
@@ -41,6 +42,8 @@ transformed data {
 
     maxs[n] = max(time[n]);
     mins[n] = min(time[n]);
+
+    detector_index[n] = n;
 
   }
 
@@ -135,6 +138,15 @@ transformed parameters {
 
 model {
 
+  vector[N_detectors] all_dt;
+  vector[N_detectors] all_amplitude;
+
+  all_dt[1] = 0.;
+  all_amplitude[1] = 1.;
+
+    
+    
+  
   // priors
 
   beta1 ~ std_normal();
@@ -164,14 +176,18 @@ model {
   log_bkg ~ normal(log(500), log(100));  
   log_amplitude ~ std_normal();
 
+  for (n in 2:N_detectors) {
+    all_dt[n] = dt[n-1];
+    all_amplitude[n] = amplitude[n-1];
+  }
 
 
 
   
-  target += reduce_sum(partial_log_like_bw_multi_scale_fast, counts[1,:N_time_bins[1]], grainsize[1],
-                       time[1,:N_time_bins[1]], exposure[1,:N_time_bins[1]],
-                       omega[1], omega[2], beta1, beta2,
-                       0., bkg[1], scale[1], scale[2], 1, k);
+  /* target += reduce_sum(partial_log_like_bw_multi_scale_fast, counts[1,:N_time_bins[1]], grainsize[1], */
+  /*                      time[1,:N_time_bins[1]], exposure[1,:N_time_bins[1]], */
+  /*                      omega[1], omega[2], beta1, beta2, */
+  /*                      0., bkg[1], scale[1], scale[2], 1, k); */
 
 
   /* target += reduce_sum(partial_log_like_bw_multi_scale_log, counts[1,:N_time_bins[1]], grainsize[1], */
@@ -181,12 +197,12 @@ model {
 
 
   
-  for (n in 2:N_detectors) {
+  /* for (n in 2:N_detectors) { */
 
-    target += reduce_sum(partial_log_like_bw_multi_scale_fast, counts[n,:N_time_bins[n]], grainsize[n],
-                         time[n,:N_time_bins[n]], exposure[n,:N_time_bins[n]],
-                         omega[1], omega[2], beta1, beta2,
-                         dt[n-1], bkg[n], scale[1], scale[2], amplitude[n-1], k);
+  /*   target += reduce_sum(partial_log_like_bw_multi_scale_fast, counts[n,:N_time_bins[n]], grainsize[n], */
+  /*                        time[n,:N_time_bins[n]], exposure[n,:N_time_bins[n]], */
+  /*                        omega[1], omega[2], beta1, beta2, */
+  /*                        dt[n-1], bkg[n], scale[1], scale[2], amplitude[n-1], k); */
 
     /* target += reduce_sum(partial_log_like_bw_multi_scale_log, counts[n,:N_time_bins[n]], grainsize[n], */
     /*                      time[n,:N_time_bins[n]], log_exposure[n,:N_time_bins[n]], */
@@ -194,9 +210,11 @@ model {
     /*                      dt[n-1], log_bkg[n], scale[1], scale[2], log_amplitude[n-1], k); */
 
     
-  }
+  /* } */
 
 
+  target += reduce_sum(partial_total_like detector_index, 1., counts, time, exposure, omega[1], omega[2], beta1, beta2, all_dt, bkg, scale[1], scale[2], all_amplitude, k, grainsize, N_time_bins);
+  
 
 
 }
