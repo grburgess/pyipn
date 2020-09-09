@@ -213,7 +213,12 @@ model {
   /* } */
 
 
-  target += reduce_sum(partial_total_like detector_index, 1., counts, time, exposure, omega[1], omega[2], beta1, beta2, all_dt, bkg, scale[1], scale[2], all_amplitude, k, grainsize, N_time_bins);
+  target += reduce_sum(partial_total_like, detector_index, 1,
+		       counts, time, exposure,
+		       omega[1], omega[2], beta1, beta2,
+		       all_dt, bkg,
+		       scale[1], scale[2],
+		       all_amplitude, k, grainsize, N_time_bins);
   
 
 

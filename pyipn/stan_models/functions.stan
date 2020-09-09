@@ -1,7 +1,7 @@
 
 real partial_log_like_bw_multi_scale(int[] counts_slice, int start, int end, vector time, vector exposure, row_vector omega1, row_vector omega2, vector beta1, vector beta2, real dt, real bkg, real scale1, real scale2, real amplitude, int k) {
 
-  int N = size(counts_slice);
+  int N = end - start +1;
 
   vector[N] time_slice = time[start:end] - dt;
   vector[N] expected_counts_log;
@@ -22,7 +22,7 @@ real partial_log_like_bw_multi_scale(int[] counts_slice, int start, int end, vec
 
 real partial_log_like_bw_multi_scale_fast(int[] counts_slice, int start, int end, vector time, vector exposure, row_vector omega1, row_vector omega2, vector beta1, vector beta2, real dt, real bkg, real scale1, real scale2, real amplitude, int k) {
 
-  int N = size(counts_slice);
+  int N = end - start +1;
 
   vector[N] time_slice = time[start:end] - dt;
   
@@ -34,7 +34,11 @@ real partial_log_like_bw_multi_scale_fast(int[] counts_slice, int start, int end
 
 }
 
-real partial_total_like(int[] detector_slice, int start, int end, int[][] counts,  vector[] time, vector[] exposure, row_vector omega1, row_vector omega2, vector beta1, vector beta2, vector dt, vector bkg, real scale1, real scale2, vector amplitude, int k, int[] grainsize, int[] N_time_bins) {
+real partial_total_like(int[] detector_slice, int start, int end, int[,] counts,
+			vector[] time, vector[] exposure,
+			row_vector omega1, row_vector omega2, vector beta1, vector beta2,
+			vector dt, vector bkg, real scale1, real scale2, vector amplitude,
+			int k, int[] gs_array, int[] N_time_bins) {
 
   real lp = 0.;
   int num_slice_terms = end - start +1;
@@ -43,10 +47,10 @@ real partial_total_like(int[] detector_slice, int start, int end, int[][] counts
 
     int n = detector_slice[m];
     
-    lp += reduce_sum(partial_log_like_bw_multi_scale_fast, counts[n,:N_time_bins[n]], grainsize[n],
+    lp += reduce_sum(partial_log_like_bw_multi_scale_fast, counts[n,:N_time_bins[n]], gs_array[n],
                          time[n,:N_time_bins[n]], exposure[n,:N_time_bins[n]],
-                         omega[1], omega[2], beta1, beta2,
-                         dt[n], bkg[n], scale[1], scale[2], amplitude[n-1], k);
+                         omega1, omega2, beta1, beta2,
+                         dt[n], bkg[n], scale1, scale2, amplitude[n], k);
 
 
 
@@ -59,7 +63,7 @@ real partial_total_like(int[] detector_slice, int start, int end, int[][] counts
 
 
 real c() {
-
+  // the speed of light 
   return 299792.46; // km/s
 
 }
