@@ -464,7 +464,7 @@ class Universe(object):
             sc_pointing_norm=sc_pointing,
             k=k,
             grainsize=grainsize,
-            grainsize_meta = int(np.round(n_dets / n_cores) * factor2)
+            grainsize_meta = max(1,int(np.round(n_dets / n_cores) * factor2))
             
         )
 
