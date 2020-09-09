@@ -20,8 +20,8 @@ data {
   int<lower=1> k; // number of FFs
 
   int grainsize[N_detectors];
-
-
+  int grainsize_meta;
+  
 
 }
 transformed data {
@@ -213,7 +213,7 @@ model {
   /* } */
 
 
-  target += reduce_sum(partial_total_like, detector_index, 1,
+  target += reduce_sum(partial_total_like, detector_index, grainsize_meta,
 		       counts, time, exposure,
 		       omega[1], omega[2], beta1, beta2,
 		       all_dt, bkg,

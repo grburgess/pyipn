@@ -383,7 +383,7 @@ class Universe(object):
 
             ipv.plot(xyz[:, 0], xyz[:, 1], xyz[:, 2], **kwargs)
 
-    def to_stan_data(self, tstart, tstop, dt=0.2, k=50, n_cores=1, factor=0.5):
+    def to_stan_data(self, tstart, tstop, dt=0.2, k=50, n_cores=1, factor=0.5, factor2=1):
 
         n_dets = len(self._detectors)
 
@@ -396,6 +396,7 @@ class Universe(object):
         n_time_bins = []
 
         # allow for variable time selections
+
 
         tstart = np.atleast_1d(tstart)
         tstop = np.atleast_1d(tstop)
@@ -463,7 +464,8 @@ class Universe(object):
             sc_pointing_norm=sc_pointing,
             k=k,
             grainsize=grainsize,
-            bw=1.0,
+            grainsize_meta = int(np.round(n_dets / n_cores) * factor2)
+            
         )
 
         return data
