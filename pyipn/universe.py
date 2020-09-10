@@ -447,6 +447,7 @@ class Universe(object):
         #                 grainsize=1,
         #                 bw=1. )
 
+        
         grainsize = []
         for n in n_time_bins:
 
