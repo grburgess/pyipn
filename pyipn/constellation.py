@@ -206,7 +206,7 @@ class SatelliteCollection(object):
 
             yaml.dump(stream=f, data=self.as_dict(), Dumper=yaml.SafeDumper)
 
-    def display(self, earth_time="day", obs_time='2010-01-01T00:00:00'):
+    def display(self, earth_time="day", obs_time='2010-01-01T00:00:00', names=None):
 
         fig = ipv.figure()
         ipv.pylab.style.box_off()
@@ -226,15 +226,35 @@ class SatelliteCollection(object):
         y = []
         z = []
 
+        distances = []
+        
         for name, sat in self._satellites.items():
 
-            x.append(sat.xyz[0])
-            y.append(sat.xyz[1])
-            z.append(sat.xyz[2])
+            add_sat = False
+            
+            if names is not None:
 
+                if name in names:
+
+                    add_sat = True
+            else:
+
+                add_sat = True
+                    
+
+            if add_sat:
+                
+                x.append(sat.xyz[0])
+                y.append(sat.xyz[1])
+                z.append(sat.xyz[2])
+
+                distances.append(sat.true_alt)
+            
         ipv.pylab.scatter(np.array(x), np.array(
             y), np.array(z), marker='sphere', color="yellow")
 
+        ipv.xyzlim(max(distances))
+        
         ipv.show()
 
         return fig
