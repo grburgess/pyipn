@@ -217,7 +217,7 @@ class SatelliteCollection(object):
 
         grb_dict = {}
 
-        Grb_dict["ra"] = 80
+        grb_dict["ra"] = 80
         grb_dict["dec"] = -30
         grb_dict["distance"] = 500
         grb_dict["K"] = 500
@@ -461,7 +461,8 @@ class Satellite(object):
         focus="earth",
         rads=True,
     ):
-        """FIXME! briefly describe function
+        """
+        A simple satellite container
 
         :param name: 
         :param altitude: 
