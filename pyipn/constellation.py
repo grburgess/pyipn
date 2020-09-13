@@ -3,13 +3,16 @@
 #
 
 import collections
+import urllib
 from math import pi
 
 import astropy.time as atime
 import ipyvolume as ipv
 import numpy as np
+import requests
 import yaml
 from astropy.coordinates import SkyCoord
+from bs4 import BeautifulSoup
 from orbital import KeplerianElements, earth
 from tletools import TLE
 
@@ -91,6 +94,45 @@ class SatelliteCollection(object):
 
         return cls(*sats)
 
+    @classmethod
+    def from_celestrack(cls, satellite_group):
+
+        try:
+
+            req = urllib.request.urlopen(
+                f"https://www.celestrak.com/NORAD/elements/{satellite_group}.txt")
+
+            x = req.read().decode()
+
+            sats = []
+
+            tles = TLE.loads(x)
+
+            for tle in tles:
+
+                sat = Satellite.from_TLE(tle)
+                sats.append(sat)
+
+            return cls(*sats)
+
+        except:
+
+            url = 'https://www.celestrak.com/NORAD/elements'
+
+            page = requests.get(url).text
+            soup = BeautifulSoup(page, 'html.parser')
+            xx = [node.get('href') for node in soup.find_all('a')]
+
+            xxx = []
+
+            print("satellite_group must be one of the following:")
+
+            for x in xx:
+
+                if x is not None and (".txt" in x) and ("https" not in x):
+
+                    print(x[:-4])
+
     def add_satellite(self, satellite):
         """
         Add a new satellite
@@ -142,7 +184,7 @@ class SatelliteCollection(object):
 
         return cls(*constellation.satellites, normal_pointing=normal_pointing)
 
-    def as_dict(self):
+    def as_dict(self, names=None):
         """
         Build a dict of the satellites for
         a Universe object
@@ -157,7 +199,7 @@ class SatelliteCollection(object):
 
         grb_dict = {}
 
-        grb_dict["ra"] = 80
+        Grb_dict["ra"] = 80
         grb_dict["dec"] = -30
         grb_dict["distance"] = 500
         grb_dict["K"] = 500
@@ -168,30 +210,44 @@ class SatelliteCollection(object):
 
         det_dict = {}
 
+        if names is None:
+
+            names = list(self._satellites.keys())
+
         for name, sat in self._satellites.items():
-            sat_dict = {}
-            sat_dict["ra"] = sat.ra
-            sat_dict["dec"] = sat.dec
-            sat_dict["altitude"] = sat.altitude
-            sat_dict["time"] = '2010-01-01T00:00:00'
 
-            if self._normal_pointing:
+            if name in names:
 
-                sat_dict["pointing"] = dict(ra=sat.ra, dec=sat.dec)
+                sat_dict = {}
+                sat_dict["ra"] = sat.ra
+                sat_dict["dec"] = sat.dec
+                sat_dict["altitude"] = sat.altitude
+                sat_dict["time"] = '2010-01-01T00:00:00'
 
-            else:
+                if self._normal_pointing:
 
-                sat_dict["pointing"] = dict(ra=80, dec=-30)
+                    sat_dict["pointing"] = dict(ra=sat.ra, dec=sat.dec)
 
-            sat_dict["effective_area"] = 1.
+                else:
 
-            det_dict[name] = sat_dict
+                    sat_dict["pointing"] = dict(ra=80, dec=-30)
+
+                sat_dict["effective_area"] = 1.
+
+                det_dict[name] = sat_dict
 
         group_dict["detectors"] = det_dict
 
         return group_dict
 
-    def write_to(self, file_name):
+    def __add__(self, other):
+
+        sats = list(other.satellites.values())
+        sats.extend(list(self._satellites.values()))
+
+        return SatelliteCollection(*sats)
+
+    def write_to(self, file_name, names=None):
         """
         write out a simulation file with all satellites
         and a proxy GRB to YAML file
@@ -204,9 +260,10 @@ class SatelliteCollection(object):
 
         with open(file_name, "w") as f:
 
-            yaml.dump(stream=f, data=self.as_dict(), Dumper=yaml.SafeDumper)
+            yaml.dump(stream=f, data=self.as_dict(
+                names), Dumper=yaml.SafeDumper)
 
-    def display(self, earth_time="day", obs_time='2010-01-01T00:00:00', names=None):
+    def display(self, earth_time="day", obs_time='2010-01-01T00:00:00', names=None, size=10, color="yellow"):
 
         fig = ipv.figure()
         ipv.pylab.style.box_off()
@@ -227,11 +284,11 @@ class SatelliteCollection(object):
         z = []
 
         distances = []
-        
+
         for name, sat in self._satellites.items():
 
             add_sat = False
-            
+
             if names is not None:
 
                 if name in names:
@@ -240,21 +297,20 @@ class SatelliteCollection(object):
             else:
 
                 add_sat = True
-                    
 
             if add_sat:
-                
+
                 x.append(sat.xyz[0])
                 y.append(sat.xyz[1])
                 z.append(sat.xyz[2])
 
                 distances.append(sat.true_alt)
-            
+
         ipv.pylab.scatter(np.array(x), np.array(
-            y), np.array(z), marker='sphere', color="yellow")
+            y), np.array(z), marker='sphere', color=color, size=size)
 
         ipv.xyzlim(max(distances))
-        
+
         ipv.show()
 
         return fig
@@ -410,8 +466,12 @@ class Satellite(object):
 
         name = clean_name(tle.name)
 
+        orbit = tle.to_orbit()
+
+        altitude = np.sqrt((orbit.r**2).sum()).to('km').value - 6371
+
         return cls(name=name,
-                   altitude=tle.a,  # this is in km
+                   altitude=altitude,  # this is in km
                    eccentricity=tle.ecc,
                    inclination=tle.inc,
                    right_ascension=tle.raan,
@@ -477,15 +537,15 @@ class Satellite(object):
         return heavenly_body_radius[self._focus.lower()]
 
     def __repr__(self):
-        return "{0}, {1}, {2}, {3}, {4}, {5}, {6}".format(self.name, self.altitude, self.eccentricity,
-                                                          self.inclination, self.right_ascension, self.perigee, self.ta)
+        return "{0}, {1}, {2}, {3}, {4}, {5}, {6}".format(self._name, self._altitude, self._eccentricity,
+                                                          self._inclination, self._right_ascension, self._perigee, self._ta)
 
     def __str__(self):
         return "Satellite Name: {0}, Alt: {1}, e: {2}, " \
-               "Inclination: {3}, RA: {4}, Periapsis: {5}, Anomaly: {6}".format(self.name, self.altitude,
-                                                                                self.eccentricity, self.inclination,
-                                                                                self.right_ascension, self.perigee,
-                                                                                self.ta)
+               "Inclination: {3}, RA: {4}, Periapsis: {5}, Anomaly: {6}".format(self._name, self._altitude,
+                                                                                self._eccentricity, self._inclination,
+                                                                                self._right_ascension, self._perigee,
+                                                                                self._ta)
 
 
 def clean_name(name):
