@@ -100,7 +100,8 @@ class SatelliteCollection(object):
         try:
 
             req = urllib.request.urlopen(
-                f"https://www.celestrak.com/NORAD/elements/{satellite_group}.txt")
+                f"https://www.celestrak.com/NORAD/elements/{satellite_group}.txt"
+            )
 
             x = req.read().decode()
 
@@ -117,11 +118,11 @@ class SatelliteCollection(object):
 
         except:
 
-            url = 'https://www.celestrak.com/NORAD/elements'
+            url = "https://www.celestrak.com/NORAD/elements"
 
             page = requests.get(url).text
-            soup = BeautifulSoup(page, 'html.parser')
-            xx = [node.get('href') for node in soup.find_all('a')]
+            soup = BeautifulSoup(page, "html.parser")
+            xx = [node.get("href") for node in soup.find_all("a")]
 
             xxx = []
 
@@ -162,7 +163,17 @@ class SatelliteCollection(object):
         self.add_satellite(Satellite.from_TLE(tle))
 
     @classmethod
-    def from_constellation(cls, num_sats, num_planes, phasing, inclination, altitude, eccentricity, name="det", normal_pointing=False):
+    def from_constellation(
+        cls,
+        num_sats,
+        num_planes,
+        phasing,
+        inclination,
+        altitude,
+        eccentricity,
+        name="det",
+        normal_pointing=False,
+    ):
         """
         Build a satellite collection from a constellation of satellites
 
@@ -180,7 +191,14 @@ class SatelliteCollection(object):
         """
 
         constellation = Constellation(
-            num_sats=num_sats, num_planes=num_planes, phasing=phasing, inclination=inclination, altitude=altitude, name=name, eccentricity=eccentricity)
+            num_sats=num_sats,
+            num_planes=num_planes,
+            phasing=phasing,
+            inclination=inclination,
+            altitude=altitude,
+            name=name,
+            eccentricity=eccentricity,
+        )
 
         return cls(*constellation.satellites, normal_pointing=normal_pointing)
 
@@ -222,7 +240,7 @@ class SatelliteCollection(object):
                 sat_dict["ra"] = sat.ra
                 sat_dict["dec"] = sat.dec
                 sat_dict["altitude"] = sat.altitude
-                sat_dict["time"] = '2010-01-01T00:00:00'
+                sat_dict["time"] = "2010-01-01T00:00:00"
 
                 if self._normal_pointing:
 
@@ -232,7 +250,7 @@ class SatelliteCollection(object):
 
                     sat_dict["pointing"] = dict(ra=80, dec=-30)
 
-                sat_dict["effective_area"] = 1.
+                sat_dict["effective_area"] = 1.0
 
                 det_dict[name] = sat_dict
 
@@ -260,10 +278,16 @@ class SatelliteCollection(object):
 
         with open(file_name, "w") as f:
 
-            yaml.dump(stream=f, data=self.as_dict(
-                names), Dumper=yaml.SafeDumper)
+            yaml.dump(stream=f, data=self.as_dict(names), Dumper=yaml.SafeDumper)
 
-    def display(self, earth_time="day", obs_time='2010-01-01T00:00:00', names=None, size=10, color="yellow"):
+    def display(
+        self,
+        earth_time="day",
+        obs_time="2010-01-01T00:00:00",
+        names=None,
+        size=10,
+        color="yellow",
+    ):
 
         fig = ipv.figure()
         ipv.pylab.style.box_off()
@@ -273,9 +297,7 @@ class SatelliteCollection(object):
 
         tt = atime.Time(obs_time)
 
-        earth = Earth(
-            earth_time=earth_time, realistic=True, astro_time=tt,
-        )
+        earth = Earth(earth_time=earth_time, realistic=True, astro_time=tt,)
 
         earth.plot()
 
@@ -306,8 +328,14 @@ class SatelliteCollection(object):
 
                 distances.append(sat.true_alt)
 
-        ipv.pylab.scatter(np.array(x), np.array(
-            y), np.array(z), marker='sphere', color=color, size=size)
+        ipv.pylab.scatter(
+            np.array(x),
+            np.array(y),
+            np.array(z),
+            marker="sphere",
+            color=color,
+            size=size,
+        )
 
         ipv.xyzlim(max(distances))
 
@@ -321,8 +349,16 @@ class Constellation(object):
     Class for describing and holding a constellation of satellites
     """
 
-    def __init__(self, num_sats, num_planes, phasing, inclination, altitude,
-                 eccentricity, name="det"):
+    def __init__(
+        self,
+        num_sats,
+        num_planes,
+        phasing,
+        inclination,
+        altitude,
+        eccentricity,
+        name="det",
+    ):
 
         focus = "earth"
         starting_number = 0
@@ -350,7 +386,7 @@ class Constellation(object):
         return sats_per_plane, corrected_phasing
 
     def _perigee_positions(self):
-        perigees = list(range(0, 360, int(360/self._sats_per_plane)))
+        perigees = list(range(0, 360, int(360 / self._sats_per_plane)))
         all_perigees = []
         for i in range(self._num_sats):
             all_perigees.extend(perigees)
@@ -373,16 +409,31 @@ class Constellation(object):
         for i in range(self._num_sats):
             sat_num = i + self._start_num + 1
             sat_name = f"{self._constellation_name}{sat_num}"
-            satellites.append(Satellite(sat_name, self._altitude, self._e, self._inclination, self._raan[i],
-                                        self._perigee_positions[i], self._ta[i], focus=self._focus))
+            satellites.append(
+                Satellite(
+                    sat_name,
+                    self._altitude,
+                    self._e,
+                    self._inclination,
+                    self._raan[i],
+                    self._perigee_positions[i],
+                    self._ta[i],
+                    focus=self._focus,
+                )
+            )
         return satellites
 
     def __repr__(self):
-        return "{0}, {1}, {2}, {3}, {4}, {5}, {6}, name={7}, starting_number={8}".format(self._num_sats, self._num_planes,
-                                                                                         self._phasing, self._inclination,
-                                                                                         self._altitude, self._e,
-                                                                                         self._constellation_name,
-                                                                                         self._start_num)
+        return "{0}, {1}, {2}, {3}, {4}, {5}, {6}, name={7}, starting_number={8}".format(
+            self._num_sats,
+            self._num_planes,
+            self._phasing,
+            self._inclination,
+            self._altitude,
+            self._e,
+            self._constellation_name,
+            self._start_num,
+        )
 
     @property
     def satellites(self):
@@ -392,15 +443,24 @@ class Constellation(object):
     def __str__(self):
         sat_string = ""
         for sat in self.satellites:
-            sat_string += sat.__str__() + '\n'
+            sat_string += sat.__str__() + "\n"
 
         return sat_string.rstrip()
 
 
 class Satellite(object):
-
-    def __init__(self, name, altitude, eccentricity, inclination, right_ascension, perigee, ta,
-                 focus="earth", rads=True):
+    def __init__(
+        self,
+        name,
+        altitude,
+        eccentricity,
+        inclination,
+        right_ascension,
+        perigee,
+        ta,
+        focus="earth",
+        rads=True,
+    ):
         """FIXME! briefly describe function
 
         :param name: 
@@ -429,13 +489,23 @@ class Satellite(object):
             self._right_ascension = right_ascension
             self._perigee = perigee
             self._ta = ta
-            self._inclination_r, self._right_ascension_r, self._perigee_r, self._ta_r = self._convert_to_rads()
+            (
+                self._inclination_r,
+                self._right_ascension_r,
+                self._perigee_r,
+                self._ta_r,
+            ) = self._convert_to_rads()
         else:
             self._inclination_r = inclination
             self._right_ascension_r = right_ascension
             self._perigee_r = perigee
             self._ta_r = ta
-            self._inclination, self._right_ascension, self._perigee, self._ta = self._convert_to_degs()
+            (
+                self._inclination,
+                self._right_ascension,
+                self._perigee,
+                self._ta,
+            ) = self._convert_to_degs()
 
         self._compute_position()
 
@@ -443,23 +513,32 @@ class Satellite(object):
 
         # add this to orbital
 
-        ke = KeplerianElements.with_altitude(self._altitude*1000.,
-                                             e=self._eccentricity,
-                                             i=self._inclination_r,
-                                             arg_pe=self._perigee_r,
-                                             raan=self._right_ascension_r,
-                                             body=earth
-                                             )
+        ke = KeplerianElements.with_altitude(
+            self._altitude * 1000.0,
+            e=self._eccentricity,
+            i=self._inclination_r,
+            arg_pe=self._perigee_r,
+            raan=self._right_ascension_r,
+            body=earth,
+        )
 
         # natural output is in meters so convert
 
-        coord = SkyCoord(x=ke.r.x/1000., y=ke.r.y/1000., z=ke.r.z /
-                         1000., unit='km', frame='gcrs', representation_type='cartesian')
+        coord = SkyCoord(
+            x=ke.r.x / 1000.0,
+            y=ke.r.y / 1000.0,
+            z=ke.r.z / 1000.0,
+            unit="km",
+            frame="gcrs",
+            representation_type="cartesian",
+        )
 
-        self._ra, self._dec = float(
-            coord.spherical.lon.deg), float(coord.spherical.lat.deg)
+        self._ra, self._dec = (
+            float(coord.spherical.lon.deg),
+            float(coord.spherical.lat.deg),
+        )
 
-        self._xyz = np.array([ke.r.x, ke.r.y, ke.r.z])/1000.
+        self._xyz = np.array([ke.r.x, ke.r.y, ke.r.z]) / 1000.0
 
     @classmethod
     def from_TLE(cls, tle):
@@ -468,19 +547,18 @@ class Satellite(object):
 
         orbit = tle.to_orbit()
 
-        altitude = np.sqrt((orbit.r**2).sum()).to('km').value - 6371
+        altitude = np.sqrt((orbit.r ** 2).sum()).to("km").value - 6371
 
-        return cls(name=name,
-                   altitude=altitude,  # this is in km
-                   eccentricity=tle.ecc,
-                   inclination=tle.inc,
-                   right_ascension=tle.raan,
-                   perigee=tle.argp,
-                   ta=0,
-                   rads=False
-
-
-                   )
+        return cls(
+            name=name,
+            altitude=altitude,  # this is in km
+            eccentricity=tle.ecc,
+            inclination=tle.inc,
+            right_ascension=tle.raan,
+            perigee=tle.argp,
+            ta=0,
+            rads=False,
+        )
 
     @property
     def name(self):
@@ -523,30 +601,53 @@ class Satellite(object):
         if value:
             return value * to_rad
         else:
-            return self._inclination * to_rad, self._right_ascension * to_rad, self._perigee * to_rad, self._ta * to_rad
+            return (
+                self._inclination * to_rad,
+                self._right_ascension * to_rad,
+                self._perigee * to_rad,
+                self._ta * to_rad,
+            )
 
     def _convert_to_degs(self, value=None):
         to_deg = 180 / pi
         if value:
             return value * to_deg
         else:
-            return self._inclination_r * to_deg, self._right_ascension_r * to_deg, self._perigee_r * to_deg, \
-                self._ta_r * to_deg
+            return (
+                self._inclination_r * to_deg,
+                self._right_ascension_r * to_deg,
+                self._perigee_r * to_deg,
+                self._ta_r * to_deg,
+            )
 
     def _get_radius(self):
         return heavenly_body_radius[self._focus.lower()]
 
     def __repr__(self):
-        return "{0}, {1}, {2}, {3}, {4}, {5}, {6}".format(self._name, self._altitude, self._eccentricity,
-                                                          self._inclination, self._right_ascension, self._perigee, self._ta)
+        return "{0}, {1}, {2}, {3}, {4}, {5}, {6}".format(
+            self._name,
+            self._altitude,
+            self._eccentricity,
+            self._inclination,
+            self._right_ascension,
+            self._perigee,
+            self._ta,
+        )
 
     def __str__(self):
-        return "Satellite Name: {0}, Alt: {1}, e: {2}, " \
-               "Inclination: {3}, RA: {4}, Periapsis: {5}, Anomaly: {6}".format(self._name, self._altitude,
-                                                                                self._eccentricity, self._inclination,
-                                                                                self._right_ascension, self._perigee,
-                                                                                self._ta)
+        return (
+            "Satellite Name: {0}, Alt: {1}, e: {2}, "
+            "Inclination: {3}, RA: {4}, Periapsis: {5}, Anomaly: {6}".format(
+                self._name,
+                self._altitude,
+                self._eccentricity,
+                self._inclination,
+                self._right_ascension,
+                self._perigee,
+                self._ta,
+            )
+        )
 
 
 def clean_name(name):
-    return name.replace(' ', '_').replace('(', '').replace(')', '')
+    return name.replace(" ", "_").replace("(", "").replace(")", "")
