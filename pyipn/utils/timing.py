@@ -25,9 +25,10 @@ def theta_from_time_delay(dt, distance):
 
 def calculate_distance_and_norm(d1, d2):
 
-    dxyz = (d2.location.get_cartesian_coord().xyz - d1.location.get_cartesian_coord().xyz).to('km')
+    dxyz = (
+        d2.location.get_cartesian_coord().xyz - d1.location.get_cartesian_coord().xyz
+    ).to("km")
 
-    
     # calculate ra and dec of vector d  pointing from detector1 to detector2
     dcart = Location(
         SkyCoord(
@@ -35,7 +36,7 @@ def calculate_distance_and_norm(d1, d2):
             y=dxyz[1],
             z=dxyz[2],
             representation_type="cartesian",
-#            unit="km",
+            #            unit="km",
             frame="icrs",
         )
     )
@@ -48,11 +49,10 @@ def calculate_distance_and_norm(d1, d2):
 
         distance = np.linalg.norm(dxyz).to("km")
 
-    except(AttributeError):
+    except (AttributeError):
 
         distance = np.linalg.norm(dxyz) * u.km
 
-        
     return distance, norm_d, ra, dec
 
 
@@ -83,7 +83,7 @@ def compute_annulus_from_time_delay(
 
     for dt in time_delays:
 
-        theta = theta_from_time_delay(-dt, distance )
+        theta = theta_from_time_delay(-dt, distance)
 
         thetas.append(theta)
 

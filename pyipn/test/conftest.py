@@ -2,9 +2,6 @@ import pytest
 import os
 from pyipn import Universe, copy_template, Fit
 from pyipn.io.package_utils import get_path_of_data_file
-                     
-
-
 
 
 @pytest.fixture(scope="session")
@@ -20,9 +17,10 @@ def universe():
 
     os.remove("test_universe_save.h5")
 
+
 @pytest.fixture(scope="session")
 def fit():
 
     fit = Fit.from_netcdf(get_path_of_data_file("test_fit.h5"))
-    
+
     yield fit

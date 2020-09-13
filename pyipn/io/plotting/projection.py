@@ -32,7 +32,7 @@ __all__ = (
 )
 
 
-def create_skw_dict(projection, center=None, radius=None,rotate=None):
+def create_skw_dict(projection, center=None, radius=None, rotate=None):
     assert projection in [
         "astro degrees aitoff",
         "astro degrees mollweide",
@@ -55,10 +55,12 @@ def create_skw_dict(projection, center=None, radius=None,rotate=None):
 
         assert radius is not None, "you must specify a radius"
 
-        skw_dict = dict(projection=projection, center=center, radius=radius, rotate=rotate)
+        skw_dict = dict(
+            projection=projection, center=center, radius=radius, rotate=rotate
+        )
 
     elif center is not None:
 
         skw_dict["center"] = center
-        
+
     return skw_dict

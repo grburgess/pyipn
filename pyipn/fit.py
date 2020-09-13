@@ -21,7 +21,9 @@ from .universe import Universe
 
 
 class Fit(object):
-    def __init__(self, *inference_data, universe_save=None, npix=2 ** 5, fast_open=False):
+    def __init__(
+        self, *inference_data, universe_save=None, npix=2 ** 5, fast_open=False
+    ):
         """FIXME! briefly describe function
 
         :param inference_data:
@@ -42,8 +44,7 @@ class Fit(object):
 
             for idata in inference_data[1:]:
 
-                self._posterior = av.concat(
-                    self._posterior, idata, dim="chain")
+                self._posterior = av.concat(self._posterior, idata, dim="chain")
 
         self._npix = npix
 
@@ -58,10 +59,6 @@ class Fit(object):
 
             self._do_contour = False
 
-
-    
-
-        
         self._beta1 = self._posterior.posterior.beta1.stack(
             sample=("chain", "draw")
         ).values
@@ -192,7 +189,7 @@ class Fit(object):
         elif self._do_contour:
 
             self._build_moc_map()
-            
+
     def _build_moc_map(self):
 
         pts = np.column_stack((self._grb_phi, self._grb_theta))
@@ -205,8 +202,7 @@ class Fit(object):
         self._prob_density = data["PROBDENSITY"]
 
         level, ipix = ah.uniq_to_level_ipix(self._uniq)
-        area = ah.nside_to_pixel_area(
-            ah.level_to_nside(level)).to_value(u.steradian)
+        area = ah.nside_to_pixel_area(ah.level_to_nside(level)).to_value(u.steradian)
         self._prob = self._prob_density * area
 
     def _detector_check(self, det_number):
@@ -448,7 +444,9 @@ class Fit(object):
 
         return fig
 
-    def plot_light_curve_fit(self, detector, tstart, tstop, dt=0.2, thin=1, color='r', **kwargs):
+    def plot_light_curve_fit(
+        self, detector, tstart, tstop, dt=0.2, thin=1, color="r", **kwargs
+    ):
 
         self._detector_check(detector)
         assert self._has_universe
@@ -485,7 +483,16 @@ class Fit(object):
 
         return fig
 
-    def plot_light_curve_ppcs(self, detector, tstart, tstop, dt=0.2, levels=[99, 95, 68], colors=["r", "g", "b"], **kwargs):
+    def plot_light_curve_ppcs(
+        self,
+        detector,
+        tstart,
+        tstop,
+        dt=0.2,
+        levels=[99, 95, 68],
+        colors=["r", "g", "b"],
+        **kwargs
+    ):
 
         self._detector_check(detector)
         assert self._has_universe
@@ -519,19 +526,25 @@ class Fit(object):
 
         for level in levels:
 
-            tmp_low = np.percentile(ppcs / exposure, 50. - level / 2., axis=0)
-            tmp_high = np.percentile(ppcs / exposure, 50. + level / 2., axis=0)
+            tmp_low = np.percentile(ppcs / exposure, 50.0 - level / 2.0, axis=0)
+            tmp_high = np.percentile(ppcs / exposure, 50.0 + level / 2.0, axis=0)
 
             ppc_low.append(tmp_low)
             ppc_high.append(tmp_high)
 
-        #colors = [light,mid,dark]
+        # colors = [light,mid,dark]
 
         for j, (lo, hi) in enumerate(zip(ppc_low, ppc_high)):
 
             for i in range(len(edges) - 1):
-                ax.fill_between([edges[i], edges[i + 1]],
-                                lo[i], hi[i], fc=colors[j], ec="none", lw=0)
+                ax.fill_between(
+                    [edges[i], edges[i + 1]],
+                    lo[i],
+                    hi[i],
+                    fc=colors[j],
+                    ec="none",
+                    lw=0,
+                )
 
         ax.scatter(mid_points, rate, **kwargs)
 
@@ -561,8 +574,7 @@ class Fit(object):
 
             bkg = self._background
 
-        ppcs = ppc_generator(mid_points, exposure,
-                             pred_rate, bkg, self._n_samples)
+        ppcs = ppc_generator(mid_points, exposure, pred_rate, bkg, self._n_samples)
 
         return ppcs
 

@@ -99,20 +99,23 @@ class Detector(object):
 
         return self._location.coord.separation(grb.location.coord)
 
-
     def _check_earth_blockage(self, grb):
 
-        earth_radius = 6371. * u.km
-        
-        grb_xyz = grb.location.get_cartesian_coord("gcrs").xyz/np.linalg.norm(grb.location.get_cartesian_coord("gcrs").xyz)
-        
+        earth_radius = 6371.0 * u.km
 
-        
+        grb_xyz = grb.location.get_cartesian_coord("gcrs").xyz / np.linalg.norm(
+            grb.location.get_cartesian_coord("gcrs").xyz
+        )
 
-        horizon_angle = 0.5 * np.pi - np.arccos(earth_radius / self._location.altitude).to(u.rad).value
+        horizon_angle = (
+            0.5 * np.pi
+            - np.arccos(earth_radius / self._location.altitude).to(u.rad).value
+        )
 
-        sc_pos = self._location.get_cartesian_coord("gcrs").xyz/np.linalg.norm(self._location.get_cartesian_coord("gcrs").xyz)
-        
+        sc_pos = self._location.get_cartesian_coord("gcrs").xyz / np.linalg.norm(
+            self._location.get_cartesian_coord("gcrs").xyz
+        )
+
         angle = np.arccos(grb_xyz.value.dot(-sc_pos.value))
 
         if angle < horizon_angle:
@@ -122,10 +125,10 @@ class Detector(object):
         else:
 
             return False
-        
-        
-    
-    def build_light_curve(self, grb, T0, tstart, tstop, earth_blockage=False, seed=1234):
+
+    def build_light_curve(
+        self, grb, T0, tstart, tstop, earth_blockage=False, seed=1234
+    ):
         """
         Build the light curve observed from the GRB
 
@@ -151,7 +154,7 @@ class Detector(object):
         if earth_blockage:
 
             earth_occulted = self._check_earth_blockage(grb)
-        
+
         # now get the grb's pulse parameters
 
         K, t_rise, t_decay, t_start = grb.pulse_parameters
@@ -165,10 +168,10 @@ class Detector(object):
             assert len(K) == len(t_start)
 
             if earth_occulted:
-                K = np.array([0. for x in K])
+                K = np.array([0.0 for x in K])
 
                 print(f"{self._name} is earth occulted")
-                
+
             is_multi_pulse = True
 
         except:
@@ -177,11 +180,10 @@ class Detector(object):
 
                 print(f"{self._name} is earth occulted")
 
-                K=0.
-            
+                K = 0.0
+
             is_multi_pulse = False
 
-            
         if not is_multi_pulse:
 
             # scale the GRB by the effective area
@@ -191,8 +193,8 @@ class Detector(object):
             # compute the arrival times
 
             source_arrival_times = source_poisson_generator(
-                tstart, tstop, observed_intensity, T0, t_rise, t_decay,
-                seed)
+                tstart, tstop, observed_intensity, T0, t_rise, t_decay, seed
+            )
 
         else:
 
@@ -212,7 +214,7 @@ class Detector(object):
             )
 
         bkg_arrival_times = background_poisson_generator(
-            tstart, tstop, self._background_slope, self._background_norm, seed+1
+            tstart, tstop, self._background_slope, self._background_norm, seed + 1
         )
 
         # return a light curve

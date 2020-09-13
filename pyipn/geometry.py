@@ -42,6 +42,7 @@ class Pointing(object):
     def coord(self):
         return self._skycoord
 
+
 # why pointing and location class different
 class Location(object):
     def __init__(self, sky_coord, base_frame="icrs"):
@@ -64,8 +65,6 @@ class Location(object):
 
             frame = self._base_frame
 
-
-            
         return self._skycoord.transform_to(frame).represent_as(CartesianRepresentation)
 
     def get_norm_vec(self, unit, frame=None):
@@ -108,8 +107,7 @@ class DetectorLocation(Location):
         distance = DetectorLocation._EARTH_RADIUS + altitude
 
         self._altitude = altitude
-        
-        
+
         # create a sky coordinate for the detector
 
         sky_coord = SkyCoord(
@@ -118,7 +116,6 @@ class DetectorLocation(Location):
 
         super(DetectorLocation, self).__init__(sky_coord, base_frame="gcrs")
 
-        
     @property
     def altitude(self):
         return self._altitude

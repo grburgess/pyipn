@@ -53,14 +53,12 @@ class GRB(object):
 
         position = f"{self._location.coord.ra.deg},{self._location.coord.dec.deg}"
 
-        
-        
         output["location"] = position
-        output["K"] = ",".join([f"{x}" for x in  np.atleast_1d(self._K)])
+        output["K"] = ",".join([f"{x}" for x in np.atleast_1d(self._K)])
         if self._t_start is not None:
-            output[r"$t_s$"] = ",".join([f"{x}" for x in  np.atleast_1d(self._t_start)])
-        
-        output[r"$t_r$"] = ",".join([f"{x}" for x in  np.atleast_1d(self._t_rise)])
-        output[r"$t_d$"] = ",".join([f"{x}" for x in  np.atleast_1d(self._t_decay)])
+            output[r"$t_s$"] = ",".join([f"{x}" for x in np.atleast_1d(self._t_start)])
+
+        output[r"$t_r$"] = ",".join([f"{x}" for x in np.atleast_1d(self._t_rise)])
+        output[r"$t_d$"] = ",".join([f"{x}" for x in np.atleast_1d(self._t_decay)])
 
         return pd.Series(output)
