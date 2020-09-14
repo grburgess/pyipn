@@ -8,7 +8,7 @@ from .fit import Fit
 from .stan_models import get_stan_model, list_stan_models
 from .lightcurve import BinnedLightCurve
 
-# from .correlation import Correlator
+from .correlation import Correlator
 from .io.package_utils import copy_template
 from .possion_gen import pulse
 import ligo.skymap.plot
