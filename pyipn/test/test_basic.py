@@ -87,7 +87,6 @@ def test_correlation(universe):
 
     cc = Correlator(lc1, lc2, idx_lc_1, idx_beg_lc2, idx_end_lc2, cl_sigma=[1, 2, 3])
 
-
     cc.dt_min
 
     assert len(cc.dt_lower) == 3
