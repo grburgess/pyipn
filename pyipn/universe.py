@@ -472,6 +472,7 @@ class Universe(object):
             counts=counts_stan,
             time=times_stan,
             exposure=exposure_stan,
+            effective_area=effective_area,
             sc_pos=sc_pos,
             sc_pointing_norm=sc_pointing,
             k=k,
