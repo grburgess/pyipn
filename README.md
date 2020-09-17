@@ -20,9 +20,9 @@ This work is built upon the classical [InterPlanetary Network (IPN)](http://www.
 
 This work is a joint effort by:
 
-J. Michael Burgess
-Ewan Cameron
-Dmitry Svinkin
+* J. Michael Burgess
+* Ewan Cameron
+* Dmitry Svinkin
 
 ---
 
