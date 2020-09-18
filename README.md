@@ -26,7 +26,7 @@ This work is a joint effort by:
 
 ---
 
-If you find this work useful, please cite XXXXXX
+If you find this work useful, please cite  our paper [here](https://arxiv.org/abs/2009.08350)
 
 ## Install
 
