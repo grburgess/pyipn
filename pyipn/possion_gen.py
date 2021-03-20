@@ -75,7 +75,7 @@ def _pulse(x, K, t_start, t_rise, t_decay):
     :rtype: 
 
     """
-    
+
     pass
 
 
@@ -152,7 +152,7 @@ def pulse(x, K, t_start, t_rise, t_decay):
     :rtype: 
 
     """
-    
+
     return _pulse(x, K, t_start, t_rise, t_decay)
 
 
@@ -186,13 +186,13 @@ def source_poisson_generator(tstart, tstop, K, p_start, t_rise, t_decay, seed=12
 
     # if we do not expect any counts
     # then return the empty array
-    
-    if fmax > 0.:
+
+    if fmax > 0.0:
 
         arrival_times.append(tstart)
 
         # rejection sample
-        
+
         while time < tstop:
 
             time = time - (1.0 / fmax) * np.log(np.random.rand())
@@ -204,8 +204,6 @@ def source_poisson_generator(tstart, tstop, K, p_start, t_rise, t_decay, seed=12
                 arrival_times.append(time)
 
     return arrival_times.arr
-
-
 
 
 @nb.njit(fastmath=True, cache=True)

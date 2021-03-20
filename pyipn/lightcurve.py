@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import astropy.units as u
 
+
 class LightCurve(object):
     def __init__(self, source_arrival_times, bkg_arrival_times):
         """
@@ -14,8 +15,7 @@ class LightCurve(object):
 
         """
 
-        self._arrival_times = np.concatenate(
-            [source_arrival_times, bkg_arrival_times])
+        self._arrival_times = np.concatenate([source_arrival_times, bkg_arrival_times])
 
         self._source_arrival_time = source_arrival_times
 
@@ -28,7 +28,7 @@ class LightCurve(object):
         :param tstop: 
         :param dt: 
         :returns: 
-        :rtype: 
+        :rtype: rate, edges, counts
 
         """
 
@@ -102,8 +102,8 @@ class BinnedLightCurve(object):
         self._counts = counts
         self._time_bins = time_bins
         self._dt = dt
-        self._dt_ms = (dt*u.s).to("millisecond").value
-        
+        self._dt_ms = (dt * u.s).to("millisecond").value
+
         self._tstart = tstart
         self._tstop = tstop
         self._n_bins = len(counts)
@@ -123,7 +123,7 @@ class BinnedLightCurve(object):
     @property
     def res_ms(self):
         return self._dt_ms
-    
+
     @property
     def tstart(self):
         return self._tstart
@@ -137,13 +137,12 @@ class BinnedLightCurve(object):
         return int(self._n_bins)
 
     def time2idx(self, t):
-        return np.searchsorted(self._time_bins,t)
+        return np.searchsorted(self._time_bins, t)
 
-
-    def get_src_counts(self, bkg_rate=500.):
+    def get_src_counts(self, bkg_rate=500.0):
 
         return self._counts - bkg_rate * self._dt
-    
+
     def get_max_sn(self, dt_ms, bkg_rate=500):
         """
         From D. Svinkn
@@ -154,26 +153,25 @@ class BinnedLightCurve(object):
 
         """
 
-        len_int =  int(dt_ms//self._dt_ms)
-        #print(dt_ms, len_int)
+        len_int = int(dt_ms // self._dt_ms)
+        # print(dt_ms, len_int)
         counts_src = self.get_src_counts(bkg_rate)
         cs = np.cumsum(counts_src)
-  
+
         fmax = 0.0
         i1 = 0
         i2 = cs.size
-        for i in range(cs.size-len_int):
-            dif = cs[i+len_int] - cs[i]
+        for i in range(cs.size - len_int):
+            dif = cs[i + len_int] - cs[i]
             if dif > fmax:
                 fmax = dif
                 i1 = i
-                i2 = i+len_int
+                i2 = i + len_int
 
-        #print(fmax)
+        # print(fmax)
 
         return i1, i2
-        
-    
+
     @classmethod
     def from_lightcurve(cls, lightcurve, tstart, tstop, dt):
 

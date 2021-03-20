@@ -88,7 +88,7 @@ class Universe(object):
     def grb_radius(self):
         return self._grb_radius
 
-    def explode_grb(self, tstart, tstop, verbose=True):
+    def explode_grb(self, tstart, tstop, verbose=True, earth_blockage=False):
         """FIXME! briefly describe function
 
         :param verbose: 
@@ -101,7 +101,7 @@ class Universe(object):
 
             self._compute_time_differences()
 
-            self._create_light_curves(tstart, tstop)
+            self._create_light_curves(tstart, tstop, earth_blockage)
         else:
 
             print("This universe is locked")
@@ -117,7 +117,7 @@ class Universe(object):
         ltd = []
 
         norm_grb_vec = self._grb.location.get_norm_vec(
-            u.km
+            u.km, frame="gcrs"
         )  # normalized vector towards GRB
 
         for name, detector in self._detectors.items():
@@ -125,7 +125,9 @@ class Universe(object):
             # calculate closest distanistancece to wavefront when the GRB reaches the detector
             # (negative sign for right order)
             ltd.append(
-                -norm_grb_vec.dot(detector.location.get_cartesian_coord().xyz.to("km")).value
+                -norm_grb_vec.dot(
+                    detector.location.get_cartesian_coord().xyz.to("km")
+                ).value
             )
 
         # rank the distances in ascending order
@@ -160,7 +162,23 @@ class Universe(object):
         self._T0 = self._T0[unsort]
         self._time_differences[unsort]
 
-    def _create_light_curves(self, tstart, tstop):
+        # now sort the detectors
+
+        order_idx = np.argsort(self._T0)
+        det_list = np.array(list(self._detectors.keys()))
+
+        new_detectors = collections.OrderedDict()
+
+        for det in det_list[order_idx]:
+
+            new_detectors[det] = self._detectors[det]
+
+        self._detectors = new_detectors
+
+        self._T0 = self._T0[order_idx]
+        self._time_differences = self._time_differences[order_idx]
+
+    def _create_light_curves(self, tstart, tstop, earth_blockage=False):
         """FIXME! briefly describe function
 
         :returns: 
@@ -174,7 +192,12 @@ class Universe(object):
         for t0, (name, detector) in zip(self._T0, self._detectors.items()):
 
             self._light_curves[name] = detector.build_light_curve(
-                self._grb, t0, tstart, tstop, seed=self._seed + i
+                self._grb,
+                t0,
+                tstart,
+                tstop,
+                seed=self._seed + i,
+                earth_blockage=earth_blockage,
             )
 
             i += 10
@@ -367,7 +390,9 @@ class Universe(object):
 
             ipv.plot(xyz[:, 0], xyz[:, 1], xyz[:, 2], **kwargs)
 
-    def to_stan_data(self, tstart, tstop, dt=0.2, k=50, n_cores=1, factor=0.5):
+    def to_stan_data(
+        self, tstart, tstop, dt=0.2, k=50, n_cores=1, factor=0.5, factor2=1
+    ):
 
         n_dets = len(self._detectors)
 
@@ -376,6 +401,7 @@ class Universe(object):
         exposures = []
         sc_pos = np.empty((n_dets, 3))
         sc_pointing = np.empty((n_dets, 3))
+        effective_area = np.empty(n_dets)
 
         n_time_bins = []
 
@@ -406,6 +432,7 @@ class Universe(object):
             xyz = v.location.get_cartesian_coord().xyz.value
             sc_pos[n] = xyz
             sc_pointing[n] = v.pointing.cartesian
+            effective_area[n] = v.effective_area.effective_area
 
         max_n_time_bins = max(n_time_bins)
 
@@ -443,11 +470,12 @@ class Universe(object):
             counts=counts_stan,
             time=times_stan,
             exposure=exposure_stan,
+            effective_area=effective_area,
             sc_pos=sc_pos,
             sc_pointing_norm=sc_pointing,
             k=k,
             grainsize=grainsize,
-            bw=1.0,
+            grainsize_meta=max(1, int(np.round(n_dets / n_cores) * factor2)),
         )
 
         return data
@@ -459,6 +487,7 @@ class Universe(object):
         center=None,
         cmap="Set1",
         threeD=True,
+        use_all=False,
         **kwargs,
     ):
 
@@ -499,46 +528,88 @@ class Universe(object):
 
         # get the colors to use
 
-        n_verts = self._n_detectors * (self._n_detectors - 1) / 2
+        if use_all:
 
-        colors = mpl_color.colors_from_cmap(int(n_verts), cmap=cmap)
+            n_verts = self._n_detectors * (self._n_detectors - 1) / 2
 
-        for i, (d1, d2) in enumerate(combinations(self._detectors.keys(), 2)):
+            colors = mpl_color.colors_from_cmap(int(n_verts), cmap=cmap)
 
-            _ = self.plot_annulus(
-                d1,
-                d2,
-                projection=projection,
-                center=center,
-                radius=radius,
-                ax=ax,
-                edgecolor=colors[i],
-                threeD=threeD,
-                color=colors[i],
-                **kwargs,
-            )
+            for i, (d1, d2) in enumerate(combinations(self._detectors.keys(), 2)):
 
-            if threeD:
-
-                loc1 = self._detectors[d1].location.get_cartesian_coord(
-                ).xyz.value
-                loc2 = self._detectors[d2].location.get_cartesian_coord(
-                ).xyz.value
-
-                ipv.plot(
-                    np.array([loc1[0], loc2[0]]),
-                    np.array([loc1[1], loc2[1]]),
-                    np.array([loc1[2], loc2[2]]),
+                _ = self.plot_annulus(
+                    d1,
+                    d2,
+                    projection=projection,
+                    center=center,
+                    radius=radius,
+                    ax=ax,
+                    edgecolor=colors[i],
+                    threeD=threeD,
                     color=colors[i],
+                    **kwargs,
                 )
+
+                if threeD:
+
+                    loc1 = self._detectors[d1].location.get_cartesian_coord(
+                    ).xyz.value
+                    loc2 = self._detectors[d2].location.get_cartesian_coord(
+                    ).xyz.value
+
+                    ipv.plot(
+                        np.array([loc1[0], loc2[0]]),
+                        np.array([loc1[1], loc2[1]]),
+                        np.array([loc1[2], loc2[2]]),
+                        color=colors[i],
+                    )
+        else:
+
+            colors = mpl_color.colors_from_cmap(
+                len(self._detectors) - 1, cmap=cmap)
+
+            det_list = list(self._detectors.keys())
+
+            d1 = det_list[0]
+
+            for i, d2 in enumerate(det_list[1:]):
+
+                _ = self.plot_annulus(
+                    d1,
+                    d2,
+                    projection=projection,
+                    center=center,
+                    radius=radius,
+                    ax=ax,
+                    edgecolor=colors[i],
+                    threeD=threeD,
+                    color=colors[i],
+                    **kwargs,
+                )
+
+                if threeD:
+
+                    loc1 = self._detectors[d1].location.get_cartesian_coord(
+                    ).xyz.value
+                    loc2 = self._detectors[d2].location.get_cartesian_coord(
+                    ).xyz.value
+
+                    ipv.plot(
+                        np.array([loc1[0], loc2[0]]),
+                        np.array([loc1[1], loc2[1]]),
+                        np.array([loc1[2], loc2[2]]),
+                        color=colors[i],
+                    )
 
         if threeD:
 
             ipv.scatter(
                 *(
                     self._grb_radius
-                    * self._grb.location.get_cartesian_coord().xyz.value
-                    / np.linalg.norm(self._grb.location.get_cartesian_coord().xyz.value)
+                    * self._grb.location.get_cartesian_coord("gcrs").xyz.value
+                    / np.linalg.norm(
+                        self._grb.location.get_cartesian_coord(
+                            "gcrs").xyz.value
+                    )
                 )[np.newaxis].T,
                 marker="sphere",
                 color="green",

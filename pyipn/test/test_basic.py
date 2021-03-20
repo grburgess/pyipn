@@ -1,11 +1,10 @@
-import pytest
 import numpy.testing as nt
+import pytest
 from astropy.units import Quantity
 
-
-from pyipn import Universe, copy_template
+from pyipn import BinnedLightCurve, Correlator, Universe, copy_template
 from pyipn.utils.timing import calculate_distance_and_norm
-#from pyipn import BinnedLightCurve, Correlator
+
 
 def test_calculate_annulus(universe):
 
@@ -19,7 +18,7 @@ def test_calculate_annulus(universe):
     assert isinstance(norm_d, Quantity)
 
     print(distance)
-    
+
 
 def test_simple(universe):
 
@@ -45,21 +44,20 @@ def test_save_universe(universe):
 
         lc.display(-10, 50, 1.0)
 
-        rate, edges, counts = lc.get_binned_light_curve(-10,50,1)
+        rate, edges, counts = lc.get_binned_light_curve(-10, 50, 1)
 
         lc_original = universe.light_curves[det]
 
-        rate2, edges2, counts2 = lc_original.get_binned_light_curve(-10,50,1)
+        rate2, edges2, counts2 = lc_original.get_binned_light_curve(-10, 50, 1)
 
         nt.assert_array_equal(rate, rate2)
 
         nt.assert_array_equal(counts, counts2)
-        
-        
+
+
 def test_read_fit(fit, universe):
 
     assert not fit._has_universe
-
 
     fit.set_universe(universe)
 
@@ -69,28 +67,27 @@ def test_read_fit(fit, universe):
 
     fit.location_scatter()
 
+    fit.plot_light_curve_ppcs(0, 0, 20, dt=1.0)
 
-    fit.plot_light_curve_ppcs(0, 0, 20, dt=1.)
+    fit.plot_light_curve_fit(0, 0, 20, dt=1)
 
-    fit.plot_light_curve_fit(0,0,20,dt=1)
 
-    
-# def test_correlation(universe):
+def test_correlation(universe):
 
-#     lc1 = BinnedLightCurve.from_lightcurve(universe.light_curves["det1"],-10,50,.1)
-#     lc2 = BinnedLightCurve.from_lightcurve(universe.light_curves["det2"],-10,50,.1)
+    lc1 = BinnedLightCurve.from_lightcurve(universe.light_curves["det1"], -10, 50, 0.1)
+    lc2 = BinnedLightCurve.from_lightcurve(universe.light_curves["det2"], -10, 50, 0.1)
 
-#     t_cc_beg_1 = -5 # for lc 1
-#     t_cc_beg_2 = 0. # for lc 2
-#     t_cc_end_2 = 20. # for lc 2
+    t_cc_beg_1 = -5  # for lc 1
+    t_cc_beg_2 = 0.0  # for lc 2
+    t_cc_end_2 = 20.0  # for lc 2
 
-#     idx_lc_1 = lc1.time2idx(t_cc_beg_1)
-#     idx_beg_lc2 = lc2.time2idx(t_cc_beg_2)
-#     idx_end_lc2 = lc2.time2idx(t_cc_end_2)
+    idx_lc_1 = lc1.time2idx(t_cc_beg_1)
+    idx_beg_lc2 = lc2.time2idx(t_cc_beg_2)
+    idx_end_lc2 = lc2.time2idx(t_cc_end_2)
 
-#     cc = Correlator(lc1, lc2, idx_lc_1, idx_beg_lc2, idx_end_lc2, cl_sigma=[1,2,3])
+    cc = Correlator(lc1, lc2, idx_lc_1, idx_beg_lc2, idx_end_lc2, cl_sigma=[1, 2, 3])
 
-#     cc.dt_min
+    cc.dt_min
 
-#     assert len(cc.dt_lower) == 3
-#     assert len(cc.dt_upper) == 3
+    assert len(cc.dt_lower) == 3
+    assert len(cc.dt_upper) == 3

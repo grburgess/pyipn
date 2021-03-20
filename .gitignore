@@ -121,3 +121,5 @@ pyipn/test.ipynb
 *.hpp
 *.o
 *.ipynb
+/logo.key
+/logo/

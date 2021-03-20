@@ -16,12 +16,13 @@ data {
 
 
   vector[3] sc_pos[N_detectors]; // the 3D vector for each space craft
+  vector[3] sc_pointing_norm[N_detectors]; // the 3D vector for each space craft
 
   int<lower=1> k; // number of FFs
 
   int grainsize[N_detectors];
-  int grainsize_meta;
-  
+
+
 
 }
 transformed data {
@@ -29,24 +30,10 @@ transformed data {
   vector[max_N_time_bins] log_exposure[N_detectors] = log(exposure);
   
   real inv_sqrt_k = inv_sqrt(k);
-  int detector_index[N_detectors];
-  
-  vector[3]  sc_diffs[N_detectors-1]; // precomputed sc position differences
-  
+
   vector[N_detectors] maxs;
   vector[N_detectors] mins;
 
-  // figure out the scales
-  
-  for (n in 1:N_detectors){
-
-    maxs[n] = max(time[n]);
-    mins[n] = min(time[n]);
-
-    detector_index[n] = n;
-
-  }
-
   for (n in 1:N_detectors){
 
     maxs[n] = max(time[n]);
@@ -54,19 +41,18 @@ transformed data {
 
   }
 
-  
 
   real max_range = max(maxs) - min(mins);
 
+  vector[N_detectors] horizon_angle;
+  vector[3] sc_pos_norm[N_detectors];
 
-  // compute the differnces
-  for (n in 1:N_detectors -1) {
+  for (n in 1:N_detectors) {
 
-    sc_diffs[n] = sc_pos[1] - sc_pos[n+1];
-
-
+    horizon_angle[n] = calculate_horizon_angle(sc_pos[n]);
+    sc_pos_norm[n] = norm_vector(sc_pos[n]);
+    
   }
-
 
   
 }
@@ -82,7 +68,7 @@ parameters {
 
   vector[N_detectors]  log_bkg;
   vector[N_detectors-1] log_amplitude; // independent amplitude1 of LC 1; probably do not need right now...
-
+  
   positive_ordered [2] raw_scale;
   //real<lower=0> log_scale;
   //positive_ordered[2] bw;
@@ -101,7 +87,10 @@ transformed parameters {
 
   vector[N_detectors] bkg = exp(log_bkg);
   vector[N_detectors-1] amplitude = exp(log_amplitude);
-
+  vector[N_detectors] amplitude_mod;
+  vector[N_detectors] earth_occulted;
+  
+  
    vector[2] scale = raw_scale * inv_sqrt(k);
   //real scale = log_scale * inv_sqrt(k);
 
@@ -126,26 +115,30 @@ transformed parameters {
   // compute all time delays relative to the first
   // detector
 
+  for (n in 1:N_detectors) {
+
+    earth_occulted[n]= earth_occulation(horizon_angle[n], sc_pos_norm[n], grb_xyz);
+    
+  }
+  
   for (n in 1:N_detectors-1) {
 
     
-    dt[n] = time_delay(grb_xyz, sc_diffs[n]);
+    dt[n] = time_delay(grb_xyz, sc_pos[1], sc_pos[n+1]);
 
   }
 
+  amplitude_mod[1] = earth_occulted[1];
+
+  for (n in 1:N_detectors- 1){
+
+    amplitude_mod[n+1] = amplitude[n] * earth_occulted[n];
+  }
 
 }
 
 model {
 
-  vector[N_detectors] all_dt;
-  vector[N_detectors] all_amplitude;
-
-  all_dt[1] = 0.;
-  all_amplitude[1] = 1.;
-
-    
-    
   
   // priors
 
@@ -162,12 +155,10 @@ model {
 
   //bw ~ cauchy(0, 2.5);
 
-  range1_raw ~ lognormal(0, .2);
+  range1_raw ~ lognormal(log(1e-1), .5);
   //  range_delta ~ normal(0.5, 0.5);
-  range2_raw ~ lognormal(log(1e-2), .2);
+  range2_raw ~ lognormal(log(1e-1), .5);
 
-  //  range1_raw ~ exponential(1);
-  //range2_raw ~ exponential(3);
   
   omega_var[1] ~ std_normal();
   omega_var[2] ~ std_normal();
@@ -176,18 +167,18 @@ model {
   log_bkg ~ normal(log(500), log(100));  
   log_amplitude ~ std_normal();
 
-  for (n in 2:N_detectors) {
-    all_dt[n] = dt[n-1];
-    all_amplitude[n] = amplitude[n-1];
-  }
+
 
 
 
   
-  /* target += reduce_sum(partial_log_like_bw_multi_scale_fast, counts[1,:N_time_bins[1]], grainsize[1], */
-  /*                      time[1,:N_time_bins[1]], exposure[1,:N_time_bins[1]], */
-  /*                      omega[1], omega[2], beta1, beta2, */
-  /*                      0., bkg[1], scale[1], scale[2], 1, k); */
+
+
+  
+  target += reduce_sum(partial_log_like_bw_multi_scale_fast, counts[1,:N_time_bins[1]], grainsize[1],
+                       time[1,:N_time_bins[1]], exposure[1,:N_time_bins[1]],
+                       omega[1], omega[2], beta1, beta2,
+                       0., bkg[1], scale[1], scale[2], amplitude_mod[1], k);
 
 
   /* target += reduce_sum(partial_log_like_bw_multi_scale_log, counts[1,:N_time_bins[1]], grainsize[1], */
@@ -197,12 +188,12 @@ model {
 
 
   
-  /* for (n in 2:N_detectors) { */
+  for (n in 2:N_detectors) {
 
-  /*   target += reduce_sum(partial_log_like_bw_multi_scale_fast, counts[n,:N_time_bins[n]], grainsize[n], */
-  /*                        time[n,:N_time_bins[n]], exposure[n,:N_time_bins[n]], */
-  /*                        omega[1], omega[2], beta1, beta2, */
-  /*                        dt[n-1], bkg[n], scale[1], scale[2], amplitude[n-1], k); */
+    target += reduce_sum(partial_log_like_bw_multi_scale_fast, counts[n,:N_time_bins[n]], grainsize[n],
+                         time[n,:N_time_bins[n]], exposure[n,:N_time_bins[n]],
+                         omega[1], omega[2], beta1, beta2,
+                         dt[n-1], bkg[n], scale[1], scale[2], amplitude_mod[n], k);
 
     /* target += reduce_sum(partial_log_like_bw_multi_scale_log, counts[n,:N_time_bins[n]], grainsize[n], */
     /*                      time[n,:N_time_bins[n]], log_exposure[n,:N_time_bins[n]], */
@@ -210,16 +201,9 @@ model {
     /*                      dt[n-1], log_bkg[n], scale[1], scale[2], log_amplitude[n-1], k); */
 
     
-  /* } */
+  }
 
 
-  target += reduce_sum(partial_total_like, detector_index, grainsize_meta,
-		       counts, time, exposure,
-		       omega[1], omega[2], beta1, beta2,
-		       all_dt, bkg,
-		       scale[1], scale[2],
-		       all_amplitude, k, grainsize, N_time_bins);
-  
 
 
 }
