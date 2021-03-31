@@ -7,7 +7,7 @@ from .possion_gen import source_poisson_generator, background_poisson_generator
 
 
 class Detector(object):
-    def __init__(self, location, pointing, effective_area, name):
+    def __init__(self, location, pointing, effective_area, name, background_norm=500.0):
         """
         A detector at a certain location in space,
         with a certain spatial pointing, 
@@ -26,7 +26,7 @@ class Detector(object):
         self._pointing = pointing
         self._location = location
         self._background_slope = 0.0
-        self._background_norm = 500.0
+        self._background_norm = background_norm
 
         self._name = name
 
