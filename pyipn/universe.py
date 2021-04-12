@@ -266,7 +266,7 @@ class Universe(object):
 
             pointing = Pointing(value["pointing"]["ra"],
                                 value["pointing"]["dec"])
-
+            
             det = Detector(location, pointing, eff_area, name)
 
             universe.register_detector(det)
