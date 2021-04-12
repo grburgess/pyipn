@@ -244,11 +244,7 @@ class Universe(object):
             pointing = Pointing(value["pointing"]["ra"],
                                 value["pointing"]["dec"])
             
-            if 'GALILEO' in name:
-                background_norm = 10.667 * value["effective_area"]
-                det = Detector(location, pointing, eff_area, name, background_norm=background_norm)
-            else:
-                det = Detector(location, pointing, eff_area, name)
+            det = Detector(location, pointing, eff_area, name)
 
             universe.register_detector(det)
 
