@@ -234,6 +234,11 @@ class Universe(object):
         for name, value in d["detectors"].items():
 
             eff_area = EffectiveArea(value["effective_area"])
+            
+            if "background_level_per_cm2" in value:
+                background_level_per_cm2 = value["background_level_per_cm2"]
+            else:
+                background_level_per_cm2 = None
 
             time = Time(value["time"])
 
@@ -244,8 +249,12 @@ class Universe(object):
             pointing = Pointing(value["pointing"]["ra"],
                                 value["pointing"]["dec"])
             
-            det = Detector(location, pointing, eff_area, name)
-
+            if background_level_per_cm2 is not None:
+                background_norm = background_level_per_cm2 * value["effective_area"]
+                det = Detector(location, pointing, eff_area, name, background_norm=background_norm)
+            else:
+                det = Detector(location, pointing, eff_area, name)
+            
             universe.register_detector(det)
 
         return universe
