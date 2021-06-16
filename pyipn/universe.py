@@ -202,19 +202,67 @@ class Universe(object):
 
             i += 10
 
+
+    def _generate_yaml_dict(self):
+        """
+        If the simulation configuration is not loaded from a yaml dict, generate the corresponding yaml dict.
+        """
+        yaml_dict = dict()
+
+        yaml_dict['grb'] = dict()
+        yaml_dict['grb']['ra'] = self.grb.location.coord.ra.value
+        yaml_dict['grb']['dec'] = self.grb.location.coord.dec.value
+        yaml_dict['grb']['distance'] = self.grb.location.coord.distance.value
+        yaml_dict['grb']['K'] = self.grb.table['K']
+        yaml_dict['grb']['t_start'] = self.grb.table['$t_s$']
+        yaml_dict['grb']['t_rise'] = self.grb.table['$t_r$']
+        yaml_dict['grb']['t_decay'] = self.grb.table['$t_d$']
+
+
+        yaml_dict['detectors'] = dict()
+
+        for key in self.detectors.keys():
+    
+            det_obj = self.detectors[key]
+            det_dict = dict()
+    
+            det_dict['ra'] = det_obj.location.coord.ra.value
+            det_dict['dec'] = det_obj.location.coord.dec.value
+            det_dict['altitude'] = det_obj.location.altitude.value
+            det_dict['time'] = det_obj.location.coord.equinox.value
+    
+            det_dict['pointing'] = dict()
+            det_dict['pointing']['ra'] = det_obj.pointing.coord.ra.value
+            det_dict['pointing']['dec'] = det_obj.pointing.coord.dec.value
+    
+            det_dict['effective_area'] = det_obj.effective_area.effective_area
+    
+            yaml_dict['detectors'][key] = det_dict
+
+        self._yaml_dict = yaml_dict
+
+        
+            
     def write_to(self, file_name):
 
         src_lc = []
         bkg_lc = []
 
-        for k, v in self._light_curves.items():
+        # sorted guarantees that both detector data and lcs are saved and read in the same alphanumerical order
+        for k, v in sorted(self._light_curves.items()):
 
             src_lc.append(v.source_arrival_times)
             bkg_lc.append(v.bkg_arrival_times)
 
+        # fill the yaml_dict if necessary
+        if self._yaml_dict == None:
+            self._generate_yaml_dict()
+            
         uni_save = UniverseSave(self._yaml_dict, src_lc, bkg_lc)
 
         uni_save.write_to(file_name)
+
+            
 
     @classmethod
     def from_dict(cls, d, locked=False):
